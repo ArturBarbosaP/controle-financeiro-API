@@ -1,0 +1,6 @@
+@MoneyAPI_HostAddress = http://localhost:5246
+
+GET {{MoneyAPI_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
