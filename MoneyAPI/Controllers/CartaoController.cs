@@ -8,21 +8,21 @@ namespace MoneyAPI.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ContaController : BaseController
+    public class CartaoController : BaseController
     {
-        private readonly IContaService _service;
+        private readonly ICartaoService _service;
 
-        public ContaController (IContaService service, Session session) : base(session)
+        public CartaoController(ICartaoService service, Session session) : base(session)
         {
             _service = service;
         }
 
-        [SwaggerOperation(Summary = "Criar conta", Description = "Cria uma nova conta para o usuário autenticado")]
+        [SwaggerOperation(Summary = "Criar cartão", Description = "Cria um novo cartão para o usuário autenticado")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ContaDto contaDto)
+        public async Task<IActionResult> Create([FromBody] CartaoDto cartaoDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -30,18 +30,18 @@ namespace MoneyAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            ResponseDto response = await _service.CreateAsync(contaDto, UsuarioId.Value);
+            ResponseDto response = await _service.CreateAsync(cartaoDto, UsuarioId.Value);
 
             return DefaultResponse(response);
         }
 
-        [SwaggerOperation(Summary = "Atualizar conta", Description = "Atualiza uma conta passando seu ID e as novas informações")]
+        [SwaggerOperation(Summary = "Atualizar cartão", Description = "Atualiza um cartão passando seu ID e as novas informações")]
         [ProducesResponseType(200)]
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ContaDto contaDto)
+        public async Task<IActionResult> Update(int id, [FromBody] CartaoDto cartaoDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -49,12 +49,12 @@ namespace MoneyAPI.Controllers
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
 
-            ResponseDto response = await _service.UpdateAsync(id, contaDto, UsuarioId.Value);
+            ResponseDto response = await _service.UpdateAsync(id, cartaoDto, UsuarioId.Value);
 
             return DefaultResponse(response);
         }
 
-        [SwaggerOperation(Summary = "Deletar conta", Description = "Deleta uma conta passando seu ID")]
+        [SwaggerOperation(Summary = "Deletar cartão", Description = "Deleta um cartão passando seu ID")]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
@@ -69,8 +69,8 @@ namespace MoneyAPI.Controllers
             return DefaultResponse(response);
         }
 
-        [SwaggerOperation(Summary = "Listar contas", Description = "Retorna todas as contas para o usuário autenticado")]
-        [ProducesResponseType(typeof(IEnumerable<ContaDto>), 200)]
+        [SwaggerOperation(Summary = "Listar cartões", Description = "Retorna todos os cartões para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<CartaoDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -78,13 +78,13 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<ContaDto> contas = await _service.GetContasAsync(UsuarioId.Value);
+            IEnumerable<CartaoDto> cartoes = await _service.GetCartoesAsync(UsuarioId.Value);
 
-            return Ok(contas);
+            return Ok(cartoes);
         }
 
-        [SwaggerOperation(Summary = "Buscar conta", Description = "Retorna a conta com o ID informado")]
-        [ProducesResponseType(typeof(IEnumerable<ContaDto>), 200)]
+        [SwaggerOperation(Summary = "Buscar cartão", Description = "Retorna o cartão com o ID informado")]
+        [ProducesResponseType(typeof(IEnumerable<CartaoDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{id}")]
@@ -93,12 +93,12 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ContaDto conta = await _service.GetContaByIdAsync(id, UsuarioId.Value);
+            CartaoDto cartao = await _service.GetCartaoByIdAsync(id, UsuarioId.Value);
 
-            if (conta == null)
+            if (cartao == null)
                 return NotFound();
 
-            return Ok(conta);
+            return Ok(cartao);
         }
     }
 }
