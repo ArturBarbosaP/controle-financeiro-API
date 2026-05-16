@@ -2,9 +2,8 @@
 
 namespace MoneyAPI.Models.Entities
 {
-    public class Cartao
+    public class Cartao : BaseEntity
     {
-        public int Id { get; set; }
         public string Nome { get; set; }
 
         public DateOnly DataFechamento { get; set; }

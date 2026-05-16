@@ -19,6 +19,10 @@ namespace MoneyAPI.Controllers
         {
             get
             {
+                #if DEBUG
+                    return 1;
+                #endif
+
                 var token = Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
                 return token is null ? null : _session.ObterUsuarioId(token);
             }

@@ -1,8 +1,7 @@
 ﻿namespace MoneyAPI.Models.Entities
 {
-    public class Lancamento
+    public class Lancamento : BaseEntity
     {
-        public int Id { get; set; }
         public string Tipo { get; set; }
 
         public decimal Valor { get; set; }

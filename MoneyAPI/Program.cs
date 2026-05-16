@@ -63,6 +63,8 @@ builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true)
 //Swagger
 builder.Services.AddSwaggerGen(c =>
 {
+    c.EnableAnnotations();
+
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Money API",
