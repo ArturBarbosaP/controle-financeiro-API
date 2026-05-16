@@ -2,8 +2,9 @@
 
 namespace MoneyAPI.Models.Entities
 {
-    public class Categoria : BaseEntity
+    public class Categoria
     {
+        public int Id { get; set; }
         public string Nome { get; set; }
 
         public string Tipo { get; set; }

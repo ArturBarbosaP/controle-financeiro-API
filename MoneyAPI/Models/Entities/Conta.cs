@@ -1,7 +1,8 @@
 ﻿namespace MoneyAPI.Models.Entities
 {
-    public class Conta : BaseEntity
+    public class Conta
     {
+        public int Id { get; set; }
         public string Nome { get; set; }
 
         public decimal Saldo { get; set; }

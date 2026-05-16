@@ -1,7 +1,8 @@
 ﻿namespace MoneyAPI.Models.Entities
 {
-    public class Limite : BaseEntity
+    public class Limite
     {
+        public int Id { get; set; }
         public decimal ValorLimite { get; set; }
 
         public int CategoriaId { get; set; }

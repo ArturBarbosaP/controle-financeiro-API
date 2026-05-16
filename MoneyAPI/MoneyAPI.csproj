@@ -25,12 +25,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
-    <Folder Include="Models\DTOs\" />
     <Folder Include="Jobs\" />
-    <Folder Include="Helpers\" />
-    <Folder Include="Repositories\Interfaces\" />
-    <Folder Include="Services\Interfaces\" />
   </ItemGroup>
 
 </Project>
