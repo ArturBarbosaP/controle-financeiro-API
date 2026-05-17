@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 
 namespace MoneyAPI.Helpers
@@ -8,7 +9,7 @@ namespace MoneyAPI.Helpers
     {
         public AutoMapperProfile()
         {
-            CreateMap<UsuarioDto, Usuario>()
+            /*CreateMap<AddUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Categorias, opt => opt.Ignore())
                 .ForMember(dest => dest.Contas, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
@@ -19,16 +20,30 @@ namespace MoneyAPI.Helpers
                     opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha));
                 });
 
-            CreateMap<Usuario, UsuarioDto>()
-                .ForMember(dest => dest.Senha, opt => opt.Ignore());
+            CreateMap<Usuario, AddUsuarioDto>()
+                .ForMember(dest => dest.Senha, opt => opt.Ignore());*/
 
-            CreateMap<Categoria, CategoriaDto>();
+            CreateMap<AddUsuarioDto, Usuario>()
+                .ForMember(dest => dest.Categorias, opt => opt.Ignore())
+                .ForMember(dest => dest.Contas, opt => opt.Ignore())
+                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha)));
+
+            CreateMap<UpdateUsuarioDto, Usuario>()
+                .ForMember(dest => dest.Categorias, opt => opt.Ignore())
+                .ForMember(dest => dest.Contas, opt => opt.Ignore())
+                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Senha, opt => opt.Ignore());
 
             CreateMap<CategoriaDto, Categoria>()
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
                 .ForMember(dest => dest.Limite, opt => opt.Ignore());
+
+            CreateMap<Usuario, ReadUsuarioDto>();
 
             CreateMap<Conta, ContaDto>();
 

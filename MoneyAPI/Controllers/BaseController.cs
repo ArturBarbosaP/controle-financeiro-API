@@ -28,6 +28,19 @@ namespace MoneyAPI.Controllers
             }
         }
 
+        protected bool IsAdmin
+        {
+            get
+            {
+                #if DEBUG
+                    return true;
+                #endif
+
+                var token = Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
+                return token is null ? false : _session.UsuarioInAdminList(token);
+            }
+        }
+
         protected IActionResult DefaultResponse (ResponseDto response)
         {
             return response.Sucesso ? Ok() : StatusCode(response.StatusCode == 0 ? 500 : response.StatusCode, response.Erro);
