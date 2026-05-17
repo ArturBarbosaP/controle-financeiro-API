@@ -38,6 +38,7 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.Senha, opt => opt.Ignore());
 
             CreateMap<CategoriaDto, Categoria>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
@@ -45,9 +46,19 @@ namespace MoneyAPI.Helpers
 
             CreateMap<Usuario, ReadUsuarioDto>();
 
+            CreateMap<Categoria, CategoriaDto>();
+
+            CreateMap<CategoriaDto, Categoria>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
+                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
+                .ForMember(dest => dest.Usuario, opt => opt.Ignore())
+                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
+                .ForMember(dest => dest.Limite, opt => opt.Ignore());
+
             CreateMap<Conta, ContaDto>();
 
             CreateMap<ContaDto, Conta>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Cartoes, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
@@ -57,6 +68,7 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
 
             CreateMap<CartaoDto, Cartao>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Conta, opt => opt.Ignore());
 
@@ -64,6 +76,7 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome));
 
             CreateMap<LimiteDto, Limite>()
+                .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Categoria, opt => opt.Ignore());
 
             CreateMap<Lancamento, LancamentoDto>()
