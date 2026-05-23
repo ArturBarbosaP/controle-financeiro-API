@@ -21,10 +21,12 @@ namespace MoneyAPI.Models.DTOs.Cartao
 
         [Required(ErrorMessage = "Digite o limite disponível do cartão!")]
         [DecimalPrecision(2)]
+        [Range(0, double.MaxValue, ErrorMessage = "O limite disponível deve ser positivo!")]
         public decimal LimiteDisponivel { get; set; }
 
         [Required(ErrorMessage = "Digite o valor parcelado do cartão!")]
         [DecimalPrecision(2)]
+        [Range(0, double.MaxValue, ErrorMessage = "O valor parcelado deve ser positivo!")]
         public decimal ValorParcelado { get; set; }
 
         [Required(ErrorMessage = "Escolha a conta do cartão!")]

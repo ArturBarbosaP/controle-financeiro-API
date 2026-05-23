@@ -1,14 +1,12 @@
 ﻿using MoneyAPI.Helpers.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyAPI.Models.DTOs
+namespace MoneyAPI.Models.DTOs.Lancamento
 {
-    public class LancamentoDto
+    public class RequestLancamentoDto : IValidatableObject
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Selecione o tipo do lançamento!")]
-        [InList(["Despesa", "Receita", "Transf."], ErrorMessage = "O tipo do lançamento pode ser apenas Despesa ou Receita!")]
+        [InList(["Despesa", "Receita"], ErrorMessage = "O tipo do lançamento pode ser apenas Despesa ou Receita!")]
         public string Tipo { get; set; }
 
         [Required(ErrorMessage = "Digite o valor do lançamento!")]
@@ -23,28 +21,28 @@ namespace MoneyAPI.Models.DTOs
         public DateOnly Data { get; set; }
 
         [MaxLength(1000, ErrorMessage = "A observação do lançamento não pode ultrapassar 1000 caracteres!")]
-        public string? Observacao { get; set; }
+        public string Observacao { get; set; }
 
         public bool Fixo { get; set; }
 
-        public int? Parcelas { get; set; }
+        [Range(0, int.MaxValue, ErrorMessage = "A parcela deve ser positiva!")]
+        public int Parcelas { get; set; }
 
         public bool PreLancamento { get; set; }
 
         [Required(ErrorMessage = "Selecione a categoria do lançamento!")]
         public int CategoriaId { get; set; }
 
-        public string? CategoriaNome { get; set; }
-
         [Required(ErrorMessage = "Selecione a conta do lançamento!")]
         public int ContaId { get; set; }
 
-        public string? ContaNome { get; set; }
-
-        public int UsuarioId { get; set; }
-
         public int? CartaoId { get; set; }
-        public string? CartaoNome { get; set; }
-        public int? ContaDestinoId { get; set; }
+
+        //validação para lançamento fixo e parcelado ao mesmo tempo
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (Fixo && Parcelas > 1)
+                yield return new ValidationResult("O lançamento não pode ser parcelado e fixo!", new[] { nameof(Parcelas), nameof(Fixo) });
+        }
     }
 }

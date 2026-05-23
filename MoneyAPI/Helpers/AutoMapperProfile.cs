@@ -1,8 +1,8 @@
 ﻿using AutoMapper;
-using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.DTOs.Categoria;
 using MoneyAPI.Models.DTOs.Conta;
+using MoneyAPI.Models.DTOs.Lancamento;
 using MoneyAPI.Models.DTOs.Limite;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
@@ -63,7 +63,12 @@ namespace MoneyAPI.Helpers
 
             #region Lançamento
 
-            CreateMap<Lancamento, LancamentoDto>()
+            /*CreateMap<Lancamento, RequestLancamentoDto>()
+                .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))
+                .ForMember(dest => dest.CartaoNome, opt => opt.MapFrom(src => src.Cartao.Nome))
+                .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));*/
+
+            CreateMap<Lancamento, ResponseLancamentoDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))
                 .ForMember(dest => dest.CartaoNome, opt => opt.MapFrom(src => src.Cartao.Nome))
                 .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
