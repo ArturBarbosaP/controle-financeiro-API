@@ -15,16 +15,19 @@ namespace MoneyAPI.Controllers
             _session = session;
         }
 
+        protected string? Token
+        {
+            get
+            {
+                return Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
+            }
+        }
+
         protected int? UsuarioId
         {
             get
             {
-                #if DEBUG
-                    return 1;
-                #endif
-
-                var token = Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
-                return token is null ? null : _session.ObterUsuarioId(token);
+                return Token is null ? null : _session.ObterUsuarioId(Token);
             }
         }
 
@@ -32,18 +35,13 @@ namespace MoneyAPI.Controllers
         {
             get
             {
-                #if DEBUG
-                    return true;
-                #endif
-
-                var token = Request.Headers["Authorization"].FirstOrDefault()?.Replace("Bearer ", "");
-                return token is null ? false : _session.UsuarioInAdminList(token);
+                return Token is not null && _session.UsuarioInAdminList(Token);
             }
         }
 
         protected IActionResult DefaultResponse (ResponseDto response)
         {
-            return response.Sucesso ? Ok() : StatusCode(response.StatusCode == 0 ? 500 : response.StatusCode, response.Erro);
+            return response.Sucesso ? (response.Entidade != null ? Ok(response.Entidade) : Ok()) : StatusCode(response.StatusCode == 0 ? 500 : response.StatusCode, response.Erro);
         }
     }
 }

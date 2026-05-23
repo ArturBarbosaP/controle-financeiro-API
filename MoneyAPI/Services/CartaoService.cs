@@ -63,7 +63,6 @@ namespace MoneyAPI.Services
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
-
             }
             catch (Exception ex)
             {
@@ -95,7 +94,6 @@ namespace MoneyAPI.Services
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
-
             }
             catch (Exception ex)
             {
