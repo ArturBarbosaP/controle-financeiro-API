@@ -13,6 +13,8 @@ namespace MoneyAPI.Helpers
     {
         public AutoMapperProfile()
         {
+            #region Usuario
+
             /*CreateMap<AddUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Categorias, opt => opt.Ignore())
                 .ForMember(dest => dest.Contas, opt => opt.Ignore())
@@ -27,21 +29,31 @@ namespace MoneyAPI.Helpers
             CreateMap<Usuario, AddUsuarioDto>()
                 .ForMember(dest => dest.Senha, opt => opt.Ignore());*/
 
-            CreateMap<AddUsuarioDto, Usuario>()
+            /*CreateMap<RequestAddUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Categorias, opt => opt.Ignore())
                 .ForMember(dest => dest.Contas, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha)));
 
-            CreateMap<UpdateUsuarioDto, Usuario>()
+            CreateMap<RequestUpdateUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Categorias, opt => opt.Ignore())
                 .ForMember(dest => dest.Contas, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Senha, opt => opt.Ignore());
+                .ForMember(dest => dest.Senha, opt => opt.Ignore()); */
 
-            CreateMap<Usuario, ReadUsuarioDto>();
+            CreateMap<RequestAddUsuarioDto, Usuario>()
+                .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha)));
+
+            CreateMap<RequestUpdateUsuarioDto, Usuario>();
+
+            CreateMap<RequestPasswordUpdateUsuarioDto, Usuario>()
+                .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.NovaSenha)));
+
+            CreateMap<Usuario, ResponseUsuarioDto>();
+
+            #endregion
 
             #region Categoria
 

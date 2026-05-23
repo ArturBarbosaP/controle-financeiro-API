@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace MoneyAPI.Models.DTOs.Usuario
 {
-    public class AddUsuarioDto
+    public class RequestAddUsuarioDto
     {
         [Required(ErrorMessage = "Digite o nome!")]
         [StringLength(100, MinimumLength = 5, ErrorMessage = "O nome deve ter entre 5 e 100 caracteres!")]
@@ -16,10 +16,10 @@ namespace MoneyAPI.Models.DTOs.Usuario
         [Required(ErrorMessage = "Digite a senha!")]
         [MinLength(8, ErrorMessage = "Sua senha deve conter no mínimo 8 caracteres!")]
         [StrongPassword]
-        public string? Senha { get; set; }
+        public string Senha { get; set; }
 
         [Required(ErrorMessage = "Confirme a senha!")]
         [Compare(nameof(Senha), ErrorMessage = "As senhas devem ser iguais!")]
-        public string? ConfirmarSenha { get; set; }
+        public string ConfirmarSenha { get; set; }
     }
 }

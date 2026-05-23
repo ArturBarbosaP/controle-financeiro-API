@@ -23,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] AddUsuarioDto usuarioDto)
+        public async Task<IActionResult> Create([FromBody] RequestAddUsuarioDto usuarioDto)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);
@@ -39,7 +39,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut]
-        public async Task<IActionResult> Update([FromBody] UpdateUsuarioDto usuarioDto)
+        public async Task<IActionResult> Update([FromBody] RequestUpdateUsuarioDto usuarioDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -48,6 +48,25 @@ namespace MoneyAPI.Controllers
                 return BadRequest(ModelState);
 
             ResponseDto response = await _service.UpdateAsync(UsuarioId.Value, usuarioDto);
+
+            return DefaultResponse(response);
+        }
+
+        [SwaggerOperation(Summary = "Atualizar senha do usuário", Description = "Atualiza a senha do usuário logado")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [HttpPut("[action]")]
+        public async Task<IActionResult> UpdatePassword([FromBody] RequestPasswordUpdateUsuarioDto passwordDto)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseDto response = await _service.UpdatePasswordAsync(UsuarioId.Value, passwordDto);
 
             return DefaultResponse(response);
         }
@@ -68,7 +87,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Listar usuários", Description = "Retorna todos os usuários do sistena (apenas admin)")]
-        [ProducesResponseType(typeof(IEnumerable<ReadUsuarioDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseUsuarioDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -79,13 +98,13 @@ namespace MoneyAPI.Controllers
             if (!IsAdmin)
                 return Unauthorized();
 
-            IEnumerable<ReadUsuarioDto> usuarios = await _service.GetUsuariosAsync();
+            IEnumerable<ResponseUsuarioDto> usuarios = await _service.GetUsuariosAsync();
 
             return Ok(usuarios);
         }
 
         [SwaggerOperation(Summary = "Buscar usuário por ID", Description = "Retorna o usuário logado ou qualquer usuário pelo ID caso seja admin")]
-        [ProducesResponseType(typeof(ReadUsuarioDto), 200)]
+        [ProducesResponseType(typeof(ResponseUsuarioDto), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("[action]/{id?}")]
@@ -94,7 +113,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ReadUsuarioDto usuario;
+            ResponseUsuarioDto usuario;
 
             if (IsAdmin && id != null)
                 usuario = await _service.GetUsuarioByIdAsync((int)id);
@@ -108,7 +127,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Buscar usuário por Usuário", Description = "Retorna o usuário pelo username (apenas admin)")]
-        [ProducesResponseType(typeof(ReadUsuarioDto), 200)]
+        [ProducesResponseType(typeof(ResponseUsuarioDto), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{nomeUsuario}")]
@@ -120,7 +139,7 @@ namespace MoneyAPI.Controllers
             if (!IsAdmin)
                 return Unauthorized();
 
-            ReadUsuarioDto usuario = await _service.GetUsuarioByNomeUsuarioAsync(nomeUsuario);
+            ResponseUsuarioDto usuario = await _service.GetUsuarioByNomeUsuarioAsync(nomeUsuario);
 
             if (usuario == null)
                 return NotFound();

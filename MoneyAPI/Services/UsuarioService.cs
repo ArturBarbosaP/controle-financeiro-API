@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MoneyAPI.Helpers;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
@@ -18,7 +19,7 @@ namespace MoneyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseDto> CreateAsync(AddUsuarioDto usuarioDto)
+        public async Task<ResponseDto> CreateAsync(RequestAddUsuarioDto usuarioDto)
         {
             ResponseDto response = new();
 
@@ -32,6 +33,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível criar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseUsuarioDto>(usuarioInsert);
             }
             catch (Exception ex)
             {
@@ -43,7 +45,7 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseDto> UpdateAsync(int id, UpdateUsuarioDto usuarioDto)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestUpdateUsuarioDto usuarioDto)
         {
             ResponseDto response = new();
 
@@ -58,6 +60,49 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível atualizar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseUsuarioDto>(usuarioUpdate);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseDto> UpdatePasswordAsync(int id, RequestPasswordUpdateUsuarioDto passwordDto)
+        {
+            ResponseDto response = new();
+
+            try
+            {
+                Usuario usuario = await _repository.GetUsuarioById(id) ?? throw new NullReferenceException("O usuário não existe!");
+
+                if (PasswordHelper.VerifyPassword(passwordDto.SenhaAtual, usuario.Senha))
+                {
+                    Usuario usuarioUpdate = _mapper.Map(passwordDto, usuario);
+                    _repository.Update(usuarioUpdate);
+
+                    if (!await _repository.SaveChanges())
+                        throw new Exception("Não foi possível atualizar no banco!");
+
+                    response.Sucesso = true;
+                }
+                else
+                {
+                    response.Sucesso = false;
+                    response.Erro = "A senha digitada não corresponde com a senha atual!";
+                    response.StatusCode = 400;
+                }
             }
             catch (NullReferenceException ex)
             {
@@ -108,19 +153,19 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ReadUsuarioDto?> GetUsuarioByIdAsync(int id)
+        public async Task<ResponseUsuarioDto?> GetUsuarioByIdAsync(int id)
         {
-            return _mapper.Map<ReadUsuarioDto>(await _repository.GetUsuarioById(id));
+            return _mapper.Map<ResponseUsuarioDto>(await _repository.GetUsuarioById(id));
         }
 
-        public async Task<ReadUsuarioDto?> GetUsuarioByNomeUsuarioAsync(string usuario)
+        public async Task<ResponseUsuarioDto?> GetUsuarioByNomeUsuarioAsync(string usuario)
         {
-            return _mapper.Map<ReadUsuarioDto>(await _repository.GetUsuarioByNomeUsuario(usuario));
+            return _mapper.Map<ResponseUsuarioDto>(await _repository.GetUsuarioByNomeUsuario(usuario));
         }
 
-        public async Task<IEnumerable<ReadUsuarioDto>> GetUsuariosAsync()
+        public async Task<IEnumerable<ResponseUsuarioDto>> GetUsuariosAsync()
         {
-            return _mapper.Map<IEnumerable<ReadUsuarioDto>>(await _repository.GetUsuarios());
+            return _mapper.Map<IEnumerable<ResponseUsuarioDto>>(await _repository.GetUsuarios());
         }
     }
 }
