@@ -15,34 +15,6 @@ namespace MoneyAPI.Helpers
         {
             #region Usuario
 
-            /*CreateMap<AddUsuarioDto, Usuario>()
-                .ForMember(dest => dest.Categorias, opt => opt.Ignore())
-                .ForMember(dest => dest.Contas, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Senha, opt =>
-                {   //ignora se a senha chegar null
-                    opt.PreCondition(src => !string.IsNullOrEmpty(src.Senha));
-                    opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha));
-                });
-
-            CreateMap<Usuario, AddUsuarioDto>()
-                .ForMember(dest => dest.Senha, opt => opt.Ignore());*/
-
-            /*CreateMap<RequestAddUsuarioDto, Usuario>()
-                .ForMember(dest => dest.Categorias, opt => opt.Ignore())
-                .ForMember(dest => dest.Contas, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha)));
-
-            CreateMap<RequestUpdateUsuarioDto, Usuario>()
-                .ForMember(dest => dest.Categorias, opt => opt.Ignore())
-                .ForMember(dest => dest.Contas, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Senha, opt => opt.Ignore()); */
-
             CreateMap<RequestAddUsuarioDto, Usuario>()
                 .ForMember(dest => dest.Senha, opt => opt.MapFrom(src => PasswordHelper.HashPassword(src.Senha)));
 
@@ -57,8 +29,7 @@ namespace MoneyAPI.Helpers
 
             #region Categoria
 
-            CreateMap<Categoria, RequestCategoriaDto>()
-                .ReverseMap();
+            CreateMap<RequestCategoriaDto, Categoria>();
 
             CreateMap<Categoria, ResponseCategoriaDto>();
 
@@ -66,8 +37,7 @@ namespace MoneyAPI.Helpers
 
             #region Conta
 
-            CreateMap<Conta, RequestContaDto>()
-                .ReverseMap();
+            CreateMap<RequestContaDto, Conta>();
 
             CreateMap<Conta, ResponseContaDto>();
 
@@ -75,8 +45,7 @@ namespace MoneyAPI.Helpers
 
             #region Cartão
 
-            CreateMap<Cartao, RequestCartaoDto>()
-                .ReverseMap();
+            CreateMap<RequestCartaoDto, Cartao>();
 
             CreateMap<Cartao, ResponseCartaoDto>()
                 .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
@@ -85,18 +54,21 @@ namespace MoneyAPI.Helpers
 
             #region Limite
 
-            CreateMap<Limite, RequestLimiteDto>()
-                .ReverseMap();
+            CreateMap<RequestLimiteDto, Limite>();
 
             CreateMap<Limite, ResponseLimiteDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome));
 
             #endregion
 
+            #region Lançamento
+
             CreateMap<Lancamento, LancamentoDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))
                 .ForMember(dest => dest.CartaoNome, opt => opt.MapFrom(src => src.Cartao.Nome))
                 .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
+
+            #endregion
         }
     }
 }

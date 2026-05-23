@@ -2,7 +2,6 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MoneyAPI.Data;
 using Quartz;
-using System.Security.Cryptography;
 
 var builder = WebApplication.CreateBuilder(args);
 

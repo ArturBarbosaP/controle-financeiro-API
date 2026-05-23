@@ -1,5 +1,4 @@
-﻿using MoneyAPI.Helpers.Attributes;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace MoneyAPI.Models.DTOs.Usuario
 {

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel;
-
-namespace MoneyAPI.Models.Entities
+﻿namespace MoneyAPI.Models.Entities
 {
     public class Categoria : BaseEntity
     {

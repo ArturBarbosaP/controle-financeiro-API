@@ -1,5 +1,4 @@
-﻿
-namespace MoneyAPI.Models.DTOs.Limite
+﻿namespace MoneyAPI.Models.DTOs.Limite
 {
     public class ResponseLimiteDto
     {

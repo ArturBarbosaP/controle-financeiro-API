@@ -1,6 +1,4 @@
-﻿using static System.Net.Mime.MediaTypeNames;
-
-namespace MoneyAPI.Models.Entities
+﻿namespace MoneyAPI.Models.Entities
 {
     public class Cartao : BaseEntity
     {
