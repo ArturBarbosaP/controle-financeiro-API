@@ -10,11 +10,13 @@ namespace MoneyAPI.Services
     public class CartaoService : ICartaoService
     {
         private readonly ICartaoRepository _repository;
+        private readonly IContaRepository _contaRepository;
         private readonly IMapper _mapper;
 
-        public CartaoService(ICartaoRepository repository, IMapper mapper)
+        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository,  IMapper mapper)
         {
             _repository = repository;
+            _contaRepository = contaRepository;
             _mapper = mapper;
         }
 
@@ -24,6 +26,7 @@ namespace MoneyAPI.Services
 
             try
             {
+                Conta conta = await _contaRepository.GetContaById(cartaoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
                 Cartao cartaoInsert = _mapper.Map<Cartao>(cartaoDto);
 
                 _repository.Add(cartaoInsert);
@@ -33,6 +36,12 @@ namespace MoneyAPI.Services
 
                 response.Sucesso = true;
                 response.Entidade = _mapper.Map<ResponseCartaoDto>(cartaoInsert);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
             }
             catch (Exception ex)
             {

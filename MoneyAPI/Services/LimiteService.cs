@@ -10,11 +10,13 @@ namespace MoneyAPI.Services
     public class LimiteService : ILimiteService
     {
         private readonly ILimiteRepository _repository;
+        private readonly ICategoriaRepository _categoriaRepository;
         private readonly IMapper _mapper;
 
-        public LimiteService(ILimiteRepository repository, IMapper mapper)
+        public LimiteService(ILimiteRepository repository, ICategoriaRepository categoriaRepository, IMapper mapper)
         {
             _repository = repository;
+            _categoriaRepository = categoriaRepository;
             _mapper = mapper;
         }
 
@@ -24,6 +26,7 @@ namespace MoneyAPI.Services
 
             try
             {
+                Categoria categoria = await _categoriaRepository.GetCategoriaById(limiteDto.CategoriaId, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
                 Limite limiteInsert = _mapper.Map<Limite>(limiteDto);
 
                 _repository.Add(limiteInsert);
@@ -33,6 +36,12 @@ namespace MoneyAPI.Services
 
                 response.Sucesso = true;
                 response.Entidade = _mapper.Map<ResponseLimiteDto>(limiteInsert);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
             }
             catch (Exception ex)
             {
@@ -66,7 +75,6 @@ namespace MoneyAPI.Services
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
-
             }
             catch (Exception ex)
             {
