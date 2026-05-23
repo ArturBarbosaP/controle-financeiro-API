@@ -1,13 +1,14 @@
 ﻿using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Limite;
 
 namespace MoneyAPI.Services.Interfaces
 {
     public interface ILimiteService
     {
-        Task<IEnumerable<LimiteDto>> GetLimitesAsync(int usuarioId);
-        Task<LimiteDto?> GetLimiteByIdAsync(int id, int usuarioId);
-        Task<ResponseDto> CreateAsync(LimiteDto limiteDto, int usuarioId);
-        Task<ResponseDto> UpdateAsync(int id, LimiteDto limiteDto, int usuarioId);
+        Task<IEnumerable<ResponseLimiteDto>> GetLimitesAsync(int usuarioId);
+        Task<ResponseLimiteDto?> GetLimiteByIdAsync(int id, int usuarioId);
+        Task<ResponseDto> CreateAsync(RequestLimiteDto limiteDto, int usuarioId);
+        Task<ResponseDto> UpdateAsync(int id, RequestLimiteDto limiteDto, int usuarioId);
         Task<ResponseDto> DeleteAsync(int id, int usuarioId);
     }
 }

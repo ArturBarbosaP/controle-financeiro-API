@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Limite;
 using MoneyAPI.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] LimiteDto limiteDto)
+        public async Task<IActionResult> Create([FromBody] RequestLimiteDto limiteDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -41,7 +42,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] LimiteDto limiteDto)
+        public async Task<IActionResult> Update(int id, [FromBody] RequestLimiteDto limiteDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -70,7 +71,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Listar limites", Description = "Retorna todas os limites para o usuário autenticado")]
-        [ProducesResponseType(typeof(IEnumerable<LimiteDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseLimiteDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -78,13 +79,13 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<LimiteDto> limites = await _service.GetLimitesAsync(UsuarioId.Value);
+            IEnumerable<ResponseLimiteDto> limites = await _service.GetLimitesAsync(UsuarioId.Value);
 
             return Ok(limites);
         }
 
         [SwaggerOperation(Summary = "Buscar limite", Description = "Retorna o limite com o ID informado")]
-        [ProducesResponseType(typeof(IEnumerable<LimiteDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseLimiteDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{id}")]
@@ -93,7 +94,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            LimiteDto limite = await _service.GetLimiteByIdAsync(id, UsuarioId.Value);
+            ResponseLimiteDto limite = await _service.GetLimiteByIdAsync(id, UsuarioId.Value);
 
             if (limite == null)
                 return NotFound();

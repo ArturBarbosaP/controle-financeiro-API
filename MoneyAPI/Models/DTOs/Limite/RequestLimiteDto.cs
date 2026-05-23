@@ -1,19 +1,15 @@
 ﻿using MoneyAPI.Helpers.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyAPI.Models.DTOs
+namespace MoneyAPI.Models.DTOs.Limite
 {
-    public class LimiteDto
+    public class RequestLimiteDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Digite o valor do limite!")]
         [DecimalPrecision(2)]
         public decimal ValorLimite { get; set; }
 
         [Required(ErrorMessage = "Escolha a categoria do limite!")]
         public int CategoriaId { get; set; }
-
-        public string? CategoriaNome { get; set; }
     }
 }

@@ -3,6 +3,7 @@ using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.DTOs.Categoria;
 using MoneyAPI.Models.DTOs.Conta;
+using MoneyAPI.Models.DTOs.Limite;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 
@@ -58,13 +59,6 @@ namespace MoneyAPI.Helpers
 
             CreateMap<Conta, ResponseContaDto>();
 
-            /*CreateMap<RequestContaDto, Conta>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Cartoes, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Usuario, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore());*/
-
             #endregion
 
             #region Cartão
@@ -77,12 +71,20 @@ namespace MoneyAPI.Helpers
 
             #endregion
 
-            CreateMap<Limite, LimiteDto>()
+            #region Limite
+
+            CreateMap<Limite, RequestLimiteDto>()
+                .ReverseMap();
+
+            CreateMap<Limite, ResponseLimiteDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome));
 
-            CreateMap<LimiteDto, Limite>()
+
+            /*CreateMap<RequestLimiteDto, Limite>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Categoria, opt => opt.Ignore());
+                .ForMember(dest => dest.Categoria, opt => opt.Ignore());*/
+
+            #endregion
 
             CreateMap<Lancamento, LancamentoDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Limite;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
@@ -17,7 +18,7 @@ namespace MoneyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseDto> CreateAsync(LimiteDto limiteDto, int usuarioId)
+        public async Task<ResponseDto> CreateAsync(RequestLimiteDto limiteDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -31,6 +32,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível criar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseLimiteDto>(limiteInsert);
             }
             catch (Exception ex)
             {
@@ -42,7 +44,7 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseDto> UpdateAsync(int id, LimiteDto limiteDto, int usuarioId)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestLimiteDto limiteDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -57,6 +59,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível atualizar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseLimiteDto>(limiteUpdate);
             }
             catch (NullReferenceException ex)
             {
@@ -107,14 +110,14 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<LimiteDto?> GetLimiteByIdAsync(int id, int usuarioId)
+        public async Task<ResponseLimiteDto?> GetLimiteByIdAsync(int id, int usuarioId)
         {
-            return _mapper.Map<LimiteDto>(await _repository.GetLimiteById(id, usuarioId));
+            return _mapper.Map<ResponseLimiteDto>(await _repository.GetLimiteById(id, usuarioId));
         }
 
-        public async Task<IEnumerable<LimiteDto>> GetLimitesAsync(int usuarioId)
+        public async Task<IEnumerable<ResponseLimiteDto>> GetLimitesAsync(int usuarioId)
         {
-            return _mapper.Map<IEnumerable<LimiteDto>>(await _repository.GetLimites(usuarioId));
+            return _mapper.Map<IEnumerable<ResponseLimiteDto>>(await _repository.GetLimites(usuarioId));
         }
     }
 }
