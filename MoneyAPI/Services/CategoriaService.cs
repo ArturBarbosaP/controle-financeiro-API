@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Categoria;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
@@ -17,7 +18,7 @@ namespace MoneyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseDto> CreateAsync(CategoriaDto categoriaDto, int usuarioId)
+        public async Task<ResponseDto> CreateAsync(RequestCategoriaDto categoriaDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -32,6 +33,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível criar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseCategoriaDto>(categoriaInsert);
             }
             catch (Exception ex)
             {
@@ -43,7 +45,7 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseDto> UpdateAsync(int id, CategoriaDto categoriaDto, int usuarioId)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestCategoriaDto categoriaDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -58,6 +60,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível atualizar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseCategoriaDto>(categoriaUpdate);
             }
             catch (NullReferenceException ex)
             {
@@ -108,14 +111,14 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<CategoriaDto?> GetCategoriaByIdAsync(int id, int usuarioId)
+        public async Task<ResponseCategoriaDto?> GetCategoriaByIdAsync(int id, int usuarioId)
         {
-            return _mapper.Map<CategoriaDto>(await _repository.GetCategoriaById(id, usuarioId));
+            return _mapper.Map<ResponseCategoriaDto>(await _repository.GetCategoriaById(id, usuarioId));
         }
 
-        public async Task<IEnumerable<CategoriaDto>> GetCategoriasAsync(int usuarioId)
+        public async Task<IEnumerable<ResponseCategoriaDto>> GetCategoriasAsync(int usuarioId)
         {
-            return _mapper.Map<IEnumerable<CategoriaDto>>(await _repository.GetCategorias(usuarioId));
+            return _mapper.Map<IEnumerable<ResponseCategoriaDto>>(await _repository.GetCategorias(usuarioId));
         }
     }
 }

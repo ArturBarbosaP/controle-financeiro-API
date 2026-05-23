@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Cartao;
+using MoneyAPI.Models.DTOs.Categoria;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 
@@ -38,23 +39,16 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Senha, opt => opt.Ignore());
 
-            CreateMap<CategoriaDto, Categoria>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Usuario, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
-                .ForMember(dest => dest.Limite, opt => opt.Ignore());
-
             CreateMap<Usuario, ReadUsuarioDto>();
 
-            CreateMap<Categoria, CategoriaDto>();
+            #region Categoria
 
-            CreateMap<CategoriaDto, Categoria>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Usuario, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore())
-                .ForMember(dest => dest.Limite, opt => opt.Ignore());
+            CreateMap<Categoria, RequestCategoriaDto>()
+                .ReverseMap();
+
+            CreateMap<Categoria, ResponseCategoriaDto>();
+
+            #endregion
 
             CreateMap<Conta, ContaDto>();
 

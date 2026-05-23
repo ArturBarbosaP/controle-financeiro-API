@@ -1,12 +1,10 @@
 ﻿using MoneyAPI.Helpers.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyAPI.Models.DTOs
+namespace MoneyAPI.Models.DTOs.Categoria
 {
-    public class CategoriaDto
+    public class RequestCategoriaDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Digite o nome da categoria!")]
         [MaxLength(80, ErrorMessage = "O nome da categoria não pode ultrapassar 80 caracteres!")]
         public string Nome { get; set; }

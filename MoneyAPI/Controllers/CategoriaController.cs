@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Categoria;
 using MoneyAPI.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CategoriaDto categoriaDto)
+        public async Task<IActionResult> Create([FromBody] RequestCategoriaDto categoriaDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -41,7 +42,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CategoriaDto categoriaDto)
+        public async Task<IActionResult> Update(int id, [FromBody] RequestCategoriaDto categoriaDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -70,7 +71,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Listar categorias", Description = "Retorna todas as categorias para o usuário autenticado")]
-        [ProducesResponseType(typeof(IEnumerable<CategoriaDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseCategoriaDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -78,13 +79,13 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<CategoriaDto> categoria = await _service.GetCategoriasAsync(UsuarioId.Value);
+            IEnumerable<ResponseCategoriaDto> categoria = await _service.GetCategoriasAsync(UsuarioId.Value);
 
             return Ok(categoria);
         }
 
         [SwaggerOperation(Summary = "Buscar categoria", Description = "Retorna a categoria com o ID informado")]
-        [ProducesResponseType(typeof(IEnumerable<CategoriaDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseCategoriaDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{id}")]
@@ -93,7 +94,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            CategoriaDto categoria = await _service.GetCategoriaByIdAsync(id, UsuarioId.Value);
+            ResponseCategoriaDto categoria = await _service.GetCategoriaByIdAsync(id, UsuarioId.Value);
 
             if (categoria == null)
                 return NotFound();
