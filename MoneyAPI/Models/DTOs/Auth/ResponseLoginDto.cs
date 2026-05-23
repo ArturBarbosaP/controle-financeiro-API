@@ -1,6 +1,6 @@
 ﻿namespace MoneyAPI.Models.DTOs.Auth
 {
-    public class LoginResponseDTO
+    public class ResponseLoginDTO
     {
         public int UsuarioId { get; set; }
 

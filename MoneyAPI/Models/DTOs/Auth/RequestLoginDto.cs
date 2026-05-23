@@ -2,7 +2,7 @@
 
 namespace MoneyAPI.Models.DTOs.Auth
 {
-    public class LoginDTO
+    public class RequestLoginDto
     {
         [Required(ErrorMessage = "Usuário ou senha inválidos!")]
         public string Usuario { get; set; }

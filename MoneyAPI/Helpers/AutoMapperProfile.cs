@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 
@@ -64,13 +65,15 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
                 .ForMember(dest => dest.UsuarioId, opt => opt.Ignore());
 
-            CreateMap<Cartao, CartaoDto>()
+            #region Cartão
+
+            CreateMap<Cartao, RequestCartaoDto>()
+                .ReverseMap();
+
+            CreateMap<Cartao, ResponseCartaoDto>()
                 .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
 
-            CreateMap<CartaoDto, Cartao>()
-                .ForMember(dest => dest.Id, opt => opt.Ignore())
-                .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
-                .ForMember(dest => dest.Conta, opt => opt.Ignore());
+            #endregion
 
             CreateMap<Limite, LimiteDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome));

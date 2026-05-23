@@ -1,12 +1,10 @@
 ﻿using MoneyAPI.Helpers.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyAPI.Models.DTOs
+namespace MoneyAPI.Models.DTOs.Cartao
 {
-    public class CartaoDto
+    public class RequestCartaoDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Digite o nome do cartão!")]
         [MaxLength(80, ErrorMessage = "O nome do cartão não pode ultrapassar 80 caracteres!")]
         public string Nome { get; set; }
@@ -31,7 +29,5 @@ namespace MoneyAPI.Models.DTOs
 
         [Required(ErrorMessage = "Escolha a conta do cartão!")]
         public int ContaId { get; set; }
-
-        public string? ContaNome { get; set; }
     }
 }

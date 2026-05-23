@@ -23,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost("[action]")]
-        public async Task<IActionResult> Login([FromBody] LoginDTO loginDTO)
+        public async Task<IActionResult> Login([FromBody] RequestLoginDto loginDTO)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

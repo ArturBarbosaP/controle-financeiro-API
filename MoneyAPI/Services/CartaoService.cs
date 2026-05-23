@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
@@ -17,7 +18,7 @@ namespace MoneyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseDto> CreateAsync(CartaoDto cartaoDto, int usuarioId)
+        public async Task<ResponseDto> CreateAsync(RequestCartaoDto cartaoDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -31,6 +32,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível criar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseCartaoDto>(cartaoInsert);
             }
             catch (Exception ex)
             {
@@ -42,7 +44,7 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseDto> UpdateAsync(int id, CartaoDto cartaoDto, int usuarioId)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestCartaoDto cartaoDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -57,6 +59,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível atualizar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseCartaoDto>(cartaoUpdate);
             }
             catch (NullReferenceException ex)
             {
@@ -105,14 +108,14 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<CartaoDto?> GetCartaoByIdAsync(int id, int usuarioId)
+        public async Task<ResponseCartaoDto?> GetCartaoByIdAsync(int id, int usuarioId)
         {
-            return _mapper.Map<CartaoDto>(await _repository.GetCartaoById(id, usuarioId));
+            return _mapper.Map<ResponseCartaoDto>(await _repository.GetCartaoById(id, usuarioId));
         }
 
-        public async Task<IEnumerable<CartaoDto>> GetCartoesAsync(int usuarioId)
+        public async Task<IEnumerable<ResponseCartaoDto>> GetCartoesAsync(int usuarioId)
         {
-            return _mapper.Map<IEnumerable<CartaoDto>>(await _repository.GetCartoes(usuarioId));
+            return _mapper.Map<IEnumerable<ResponseCartaoDto>>(await _repository.GetCartoes(usuarioId));
         }
     }
 }

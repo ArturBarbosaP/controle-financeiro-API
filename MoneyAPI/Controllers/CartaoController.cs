@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] CartaoDto cartaoDto)
+        public async Task<IActionResult> Create([FromBody] RequestCartaoDto cartaoDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -41,7 +42,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] CartaoDto cartaoDto)
+        public async Task<IActionResult> Update(int id, [FromBody] RequestCartaoDto cartaoDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -70,7 +71,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Listar cartões", Description = "Retorna todos os cartões para o usuário autenticado")]
-        [ProducesResponseType(typeof(IEnumerable<CartaoDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<RequestCartaoDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -78,13 +79,13 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<CartaoDto> cartoes = await _service.GetCartoesAsync(UsuarioId.Value);
+            IEnumerable<ResponseCartaoDto> cartoes = await _service.GetCartoesAsync(UsuarioId.Value);
 
             return Ok(cartoes);
         }
 
         [SwaggerOperation(Summary = "Buscar cartão", Description = "Retorna o cartão com o ID informado")]
-        [ProducesResponseType(typeof(IEnumerable<CartaoDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<RequestCartaoDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{id}")]
@@ -93,7 +94,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            CartaoDto cartao = await _service.GetCartaoByIdAsync(id, UsuarioId.Value);
+            ResponseCartaoDto cartao = await _service.GetCartaoByIdAsync(id, UsuarioId.Value);
 
             if (cartao == null)
                 return NotFound();

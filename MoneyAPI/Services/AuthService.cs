@@ -1,5 +1,4 @@
-﻿using AutoMapper;
-using MoneyAPI.Data;
+﻿using MoneyAPI.Data;
 using MoneyAPI.Helpers;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Auth;
@@ -12,17 +11,15 @@ namespace MoneyAPI.Services
     public class AuthService : IAuthService
     {
         private readonly IUsuarioRepository _repository;
-        private readonly IMapper _mapper;
         private readonly Session _session;
 
-        public AuthService(IUsuarioRepository repository, IMapper mapper, Session session)
+        public AuthService(IUsuarioRepository repository, Session session)
         {
             _repository = repository;
-            _mapper = mapper;
             _session = session;
         }
 
-        public async Task<ResponseDto> LoginAsync(LoginDTO loginDTO)
+        public async Task<ResponseDto> LoginAsync(RequestLoginDto loginDTO)
         {
             ResponseDto response = new();
 
@@ -40,7 +37,7 @@ namespace MoneyAPI.Services
                 {
                     var token = _session.CriarSessao(usuario.Id);
                     response.Sucesso = true;
-                    response.Entidade = new LoginResponseDTO
+                    response.Entidade = new ResponseLoginDTO
                     {
                         UsuarioId = usuario.Id,
                         Nome = usuario.Nome,

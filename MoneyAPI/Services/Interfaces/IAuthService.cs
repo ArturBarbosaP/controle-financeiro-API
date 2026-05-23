@@ -5,10 +5,8 @@ namespace MoneyAPI.Services.Interfaces
 {
     public interface IAuthService
     {
-        Task<ResponseDto> LoginAsync(LoginDTO loginDTO);
-
+        Task<ResponseDto> LoginAsync(RequestLoginDto loginDTO);
         Task<ResponseDto> LogoutAsync(string token);
-
         Task<ResponseDto> VerifyAsync(string token);
     }
 }
