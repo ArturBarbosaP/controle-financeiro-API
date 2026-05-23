@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Conta;
 using MoneyAPI.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
 
@@ -22,7 +23,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(400)]
         [ProducesResponseType(401)]
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] ContaDto contaDto)
+        public async Task<IActionResult> Create([FromBody] RequestContaDto contaDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -41,7 +42,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(int id, [FromBody] ContaDto contaDto)
+        public async Task<IActionResult> Update(int id, [FromBody] RequestContaDto contaDto)
         {
             if (UsuarioId == null)
                 return Unauthorized();
@@ -70,7 +71,7 @@ namespace MoneyAPI.Controllers
         }
 
         [SwaggerOperation(Summary = "Listar contas", Description = "Retorna todas as contas para o usuário autenticado")]
-        [ProducesResponseType(typeof(IEnumerable<ContaDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseContaDto>), 200)]
         [ProducesResponseType(401)]
         [HttpGet]
         public async Task<IActionResult> GetAll()
@@ -78,13 +79,13 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<ContaDto> contas = await _service.GetContasAsync(UsuarioId.Value);
+            IEnumerable<ResponseContaDto> contas = await _service.GetContasAsync(UsuarioId.Value);
 
             return Ok(contas);
         }
 
         [SwaggerOperation(Summary = "Buscar conta", Description = "Retorna a conta com o ID informado")]
-        [ProducesResponseType(typeof(IEnumerable<ContaDto>), 200)]
+        [ProducesResponseType(typeof(IEnumerable<ResponseContaDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
         [HttpGet("{id}")]
@@ -93,7 +94,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ContaDto conta = await _service.GetContaByIdAsync(id, UsuarioId.Value);
+            ResponseContaDto conta = await _service.GetContaByIdAsync(id, UsuarioId.Value);
 
             if (conta == null)
                 return NotFound();

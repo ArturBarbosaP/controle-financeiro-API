@@ -38,7 +38,7 @@ namespace MoneyAPI.Services
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 
@@ -72,7 +72,7 @@ namespace MoneyAPI.Services
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 
@@ -104,7 +104,7 @@ namespace MoneyAPI.Services
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 

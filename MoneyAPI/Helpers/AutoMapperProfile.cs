@@ -2,6 +2,7 @@
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.DTOs.Categoria;
+using MoneyAPI.Models.DTOs.Conta;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 
@@ -50,14 +51,21 @@ namespace MoneyAPI.Helpers
 
             #endregion
 
-            CreateMap<Conta, ContaDto>();
+            #region Conta
 
-            CreateMap<ContaDto, Conta>()
+            CreateMap<Conta, RequestContaDto>()
+                .ReverseMap();
+
+            CreateMap<Conta, ResponseContaDto>();
+
+            /*CreateMap<RequestContaDto, Conta>()
                 .ForMember(dest => dest.Id, opt => opt.Ignore())
                 .ForMember(dest => dest.Cartoes, opt => opt.Ignore())
                 .ForMember(dest => dest.Lancamentos, opt => opt.Ignore())
                 .ForMember(dest => dest.Usuario, opt => opt.Ignore())
-                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore());
+                .ForMember(dest => dest.UsuarioId, opt => opt.Ignore());*/
+
+            #endregion
 
             #region Cartão
 

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Conta;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
@@ -17,7 +18,7 @@ namespace MoneyAPI.Services
             _mapper = mapper;
         }
 
-        public async Task<ResponseDto> CreateAsync(ContaDto contaDto, int usuarioId)
+        public async Task<ResponseDto> CreateAsync(RequestContaDto contaDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -32,18 +33,19 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível criar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseContaDto>(contaInsert);
             }
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 
             return response;
         }
 
-        public async Task<ResponseDto> UpdateAsync(int id, ContaDto contaDto, int usuarioId)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestContaDto contaDto, int usuarioId)
         {
             ResponseDto response = new();
 
@@ -58,6 +60,7 @@ namespace MoneyAPI.Services
                     throw new Exception("Não foi possível atualizar no banco!");
 
                 response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseContaDto>(contaUpdate);
             }
             catch (NullReferenceException ex)
             {
@@ -69,7 +72,7 @@ namespace MoneyAPI.Services
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 
@@ -101,21 +104,21 @@ namespace MoneyAPI.Services
             catch (Exception ex)
             {
                 response.Sucesso = false;
-                response.Erro = ex.Message;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
             }
 
             return response;
         }
 
-        public async Task<ContaDto?> GetContaByIdAsync(int id, int usuarioId)
+        public async Task<ResponseContaDto?> GetContaByIdAsync(int id, int usuarioId)
         {
-            return _mapper.Map<ContaDto>(await _repository.GetContaById(id, usuarioId));
+            return _mapper.Map<ResponseContaDto>(await _repository.GetContaById(id, usuarioId));
         }
 
-        public async Task<IEnumerable<ContaDto>> GetContasAsync(int usuarioId)
+        public async Task<IEnumerable<ResponseContaDto>> GetContasAsync(int usuarioId)
         {
-            return _mapper.Map<IEnumerable<ContaDto>>(await _repository.GetContas(usuarioId));
+            return _mapper.Map<IEnumerable<ResponseContaDto>>(await _repository.GetContas(usuarioId));
         }
     }
 }

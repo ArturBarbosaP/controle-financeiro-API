@@ -1,12 +1,10 @@
 ﻿using MoneyAPI.Helpers.Attributes;
 using System.ComponentModel.DataAnnotations;
 
-namespace MoneyAPI.Models.DTOs
+namespace MoneyAPI.Models.DTOs.Conta
 {
-    public class ContaDto
+    public class RequestContaDto
     {
-        public int Id { get; set; }
-
         [Required(ErrorMessage = "Digite o nome da conta!")]
         [MaxLength(80, ErrorMessage = "O nome da conta não pode ultrapassar 80 caracteres!")]
         public string Nome { get; set; }
