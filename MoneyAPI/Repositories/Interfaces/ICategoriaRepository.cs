@@ -8,6 +8,8 @@ namespace MoneyAPI.Repositories.Interfaces
 
         Task<Categoria> GetCategoriaById(int id, int usuarioId);
 
+        Task<Categoria> GetCategoriaByIdTipo(int id, string tipo, int usuarioId);
+
         Task<IEnumerable<Categoria>> GetCategoriasDeDespesa(int usuarioId);
     }
 }

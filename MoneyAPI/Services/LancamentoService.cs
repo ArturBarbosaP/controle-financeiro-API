@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
+using MoneyAPI.Helpers;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Lancamento;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace MoneyAPI.Services
 {
@@ -33,7 +35,7 @@ namespace MoneyAPI.Services
                 NormalizarLancamento(lancamentoDto);
 
                 Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
-                Categoria categoria = await _categoriaRepository.GetCategoriaById(lancamentoDto.CategoriaId, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
                 if (lancamentoDto.CartaoId != null)
                 {
                     Cartao cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
@@ -48,7 +50,7 @@ namespace MoneyAPI.Services
                 }
                 else if (lancamentoDto.Fixo) //lancamento fixo
                 {
-                    InsertFixo(lancamentoDto);
+                    InsertFixo(lancamentoDto, usuarioId, conta);
                 }
                 else //lancamento normal
                 {
@@ -122,13 +124,35 @@ namespace MoneyAPI.Services
             throw new NotImplementedException();
         }
 
-        private void InsertFixo(RequestLancamentoDto lancamentoDto)
+        private void InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta) //pr_AdicionarFixo no banco antigo
         {
-            throw new NotImplementedException();
+            bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
+
+            for (int mes = lancamentoDto.Data.Month; mes <= 12; mes++)
+            {
+                Lancamento lancamentoInsert = _mapper.Map<Lancamento>(lancamentoDto);
+                lancamentoInsert.UsuarioId = usuarioId;
+
+                int dia = ultimoDiaMes
+                    ? DateTime.DaysInMonth(lancamentoDto.Data.Year, mes)
+                    : Math.Min(lancamentoDto.Data.Day, DateTime.DaysInMonth(lancamentoDto.Data.Year, mes)); //caso o dia do mes selecionado for maior que o ultimo dia de algum mes
+
+                lancamentoInsert.Data = new DateOnly(lancamentoDto.Data.Year, mes, dia);
+
+                _repository.Add(lancamentoInsert);
+
+                if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
+                    AtualizarSaldo(lancamentoInsert, conta);
+                else
+                    AtualizarCartao(lancamentoInsert);
+            }
         }
 
         private void AtualizarSaldo(Lancamento lancamento, Conta conta) //pr_AlterarSaldo no banco antigo
         {
+            if (lancamento.PreLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
+                return;
+
             conta.Saldo += lancamento.Valor;
             _contaRepository.Update(conta);
         }
