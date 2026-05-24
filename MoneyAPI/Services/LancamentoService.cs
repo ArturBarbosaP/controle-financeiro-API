@@ -46,7 +46,7 @@ namespace MoneyAPI.Services
 
                 if (lancamentoDto.Parcelas != 0) //lancamento parcelado
                 {
-                    InsertParcelado(lancamentoDto);
+                    InsertParcelado(lancamentoDto, usuarioId, conta);
                 }
                 else if (lancamentoDto.Fixo) //lancamento fixo
                 {
@@ -119,9 +119,33 @@ namespace MoneyAPI.Services
             lancamentoDto.Observacao = string.IsNullOrWhiteSpace(lancamentoDto.Observacao) ? null : lancamentoDto.Observacao;
         }
 
-        private void InsertParcelado(RequestLancamentoDto lancamentoDto)
+        private void InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta) //pr_AdicionarParcelado no banco antigo
         {
-            throw new NotImplementedException();
+            bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
+            decimal valorParcela = Math.Round(lancamentoDto.Valor / lancamentoDto.Parcelas, 2, MidpointRounding.AwayFromZero);
+            decimal valorPrimeira = lancamentoDto.Valor - (valorParcela * (lancamentoDto.Parcelas - 1));
+
+            for (int i = 1; i <= lancamentoDto.Parcelas; i++)
+            {
+                Lancamento lancamentoInsert = _mapper.Map<Lancamento>(lancamentoDto);
+                lancamentoInsert.UsuarioId = usuarioId;
+                lancamentoInsert.Descricao = $"{i}/{lancamentoDto.Parcelas} {lancamentoDto.Descricao}";
+                lancamentoInsert.Valor = i == 1 ? valorPrimeira : valorParcela;
+
+                DateOnly novaData = lancamentoDto.Data.AddMonths(i - 1);
+                int dia = ultimoDiaMes
+                    ? DateTime.DaysInMonth(novaData.Year, novaData.Month)
+                    : Math.Min(lancamentoDto.Data.Day, DateTime.DaysInMonth(novaData.Year, novaData.Month)); //caso o dia do mes selecionado for maior que o ultimo dia de algum mes
+
+                lancamentoInsert.Data = new DateOnly(novaData.Year, novaData.Month, dia);
+
+                _repository.Add(lancamentoInsert);
+
+                if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
+                    AtualizarSaldo(lancamentoInsert, conta);
+                else
+                    AtualizarCartao(lancamentoInsert);
+            }
         }
 
         private void InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta) //pr_AdicionarFixo no banco antigo
