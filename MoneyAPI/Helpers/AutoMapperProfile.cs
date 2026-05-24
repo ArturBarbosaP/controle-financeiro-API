@@ -63,10 +63,7 @@ namespace MoneyAPI.Helpers
 
             #region Lançamento
 
-            /*CreateMap<Lancamento, RequestLancamentoDto>()
-                .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))
-                .ForMember(dest => dest.CartaoNome, opt => opt.MapFrom(src => src.Cartao.Nome))
-                .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));*/
+            CreateMap<RequestLancamentoDto, Lancamento>();
 
             CreateMap<Lancamento, ResponseLancamentoDto>()
                 .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))

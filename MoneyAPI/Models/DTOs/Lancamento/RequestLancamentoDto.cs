@@ -11,6 +11,7 @@ namespace MoneyAPI.Models.DTOs.Lancamento
 
         [Required(ErrorMessage = "Digite o valor do lançamento!")]
         [DecimalPrecision(2)]
+        [Range(0, double.MaxValue, ErrorMessage = "O valor deve ser positivo!")]
         public decimal Valor { get; set; }
 
         [Required(ErrorMessage = "Digite a descrição do lançamento!")]
@@ -21,7 +22,7 @@ namespace MoneyAPI.Models.DTOs.Lancamento
         public DateOnly Data { get; set; }
 
         [MaxLength(1000, ErrorMessage = "A observação do lançamento não pode ultrapassar 1000 caracteres!")]
-        public string Observacao { get; set; }
+        public string? Observacao { get; set; }
 
         public bool Fixo { get; set; }
 

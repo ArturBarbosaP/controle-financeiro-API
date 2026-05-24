@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Lancamento;
+using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
 
@@ -9,17 +10,78 @@ namespace MoneyAPI.Services
     public class LancamentoService : ILancamentoService
     {
         private readonly ILancamentoRepository _repository;
+        private readonly IContaRepository _contaRepository;
+        private readonly ICategoriaRepository _categoriaRepository;
+        private readonly ICartaoRepository _cartaoRepository;
         private readonly IMapper _mapper;
 
-        public LancamentoService(ILancamentoRepository repository, IMapper mapper)
+        public LancamentoService(ILancamentoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ICartaoRepository cartaoRepository, IMapper mapper)
         {
             _repository = repository;
+            _contaRepository = contaRepository;
+            _categoriaRepository = categoriaRepository;
+            _cartaoRepository = cartaoRepository;
             _mapper = mapper;
         }
 
-        public Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId)
+        public async Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId)
         {
-            throw new NotImplementedException();
+            ResponseDto response = new();
+
+            try
+            {
+                NormalizarLancamento(lancamentoDto);
+
+                Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaById(lancamentoDto.CategoriaId, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                if (lancamentoDto.CartaoId != null)
+                {
+                    Cartao cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                }
+
+                Lancamento lancamentoInsert = _mapper.Map<Lancamento>(lancamentoDto);
+                lancamentoInsert.UsuarioId = usuarioId;
+
+                if (lancamentoDto.Parcelas != 0) //lancamento parcelado
+                {
+                    InsertParcelado(lancamentoDto);
+                }
+                else if (lancamentoDto.Fixo) //lancamento fixo
+                {
+                    InsertFixo(lancamentoDto);
+                }
+                else //lancamento normal
+                {
+                    _repository.Add(lancamentoInsert);
+
+                    if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
+                        AtualizarSaldo(lancamentoInsert, conta);
+                    else
+                        AtualizarCartao(lancamentoInsert);
+
+                    response.Entidade = _mapper.Map<ResponseLancamentoDto>(lancamentoInsert);
+                }
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível criar no banco!");
+
+                response.Sucesso = true;
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
         }
 
         public Task<ResponseDto> UpdateAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId)
@@ -40,6 +102,40 @@ namespace MoneyAPI.Services
         public async Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosMensalAsync(int usuarioId, int mes, int ano)
         {
             return _mapper.Map<IEnumerable<ResponseLancamentoDto>>(await _repository.GetLancamentosMensal(usuarioId, mes, ano));
+        }
+
+        private void NormalizarLancamento(RequestLancamentoDto lancamentoDto)
+        {
+            lancamentoDto.PreLancamento = lancamentoDto.Data > DateOnly.FromDateTime(DateTime.Now);
+
+            lancamentoDto.Valor = lancamentoDto.Tipo == "Despesa" ? lancamentoDto.Valor * -1 : lancamentoDto.Valor;
+
+            lancamentoDto.Parcelas = lancamentoDto.Parcelas <= 1 ? 0 : lancamentoDto.Parcelas;
+
+            lancamentoDto.CartaoId = lancamentoDto.CartaoId == 0 ? null : lancamentoDto.CartaoId;
+
+            lancamentoDto.Observacao = string.IsNullOrWhiteSpace(lancamentoDto.Observacao) ? null : lancamentoDto.Observacao;
+        }
+
+        private void InsertParcelado(RequestLancamentoDto lancamentoDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void InsertFixo(RequestLancamentoDto lancamentoDto)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void AtualizarSaldo(Lancamento lancamento, Conta conta) //pr_AlterarSaldo no banco antigo
+        {
+            conta.Saldo += lancamento.Valor;
+            _contaRepository.Update(conta);
+        }
+
+        private void AtualizarCartao(Lancamento lancamento)
+        {
+            throw new NotImplementedException();
         }
     }
 }
