@@ -103,6 +103,20 @@ namespace MoneyAPI.Data.Map
 
             builder.HasIndex(x => x.CartaoId)
                 .HasDatabaseName("idx_fk_lancamento_cartao");
+
+            builder.Property(x => x.ContaDestinoId)
+                .HasColumnName("CONTA_DESTINO_ID")
+                .HasColumnType("int unsigned")
+                .IsRequired(false);
+
+            builder.HasOne(l => l.ContaDestino)
+                .WithMany()
+                .HasForeignKey(l => l.ContaDestinoId)
+                .HasConstraintName("fk_lancamento_conta_destino")
+                .IsRequired(false);
+
+            builder.HasIndex(x => x.ContaDestinoId)
+                .HasDatabaseName("idx_fk_lancamento_conta_destino");
         }
     }
 }

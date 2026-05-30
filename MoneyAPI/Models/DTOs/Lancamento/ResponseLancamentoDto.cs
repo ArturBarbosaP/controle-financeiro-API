@@ -29,5 +29,9 @@
         public int CartaoId { get; set; }
 
         public string CartaoNome { get; set; }
+
+        public int ContaDestinoId { get; set; }
+
+        public string ContaDestinoNome { get; set; }
     }
 }

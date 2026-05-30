@@ -30,6 +30,10 @@
 
         public int? CartaoId { get; set; }
 
-        public Cartao Cartao { get; set; }
+        public Cartao? Cartao { get; set; }
+
+        public int? ContaDestinoId { get; set; }
+
+        public Conta? ContaDestino { get; set; }
     }
 }

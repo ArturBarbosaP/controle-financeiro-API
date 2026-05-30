@@ -1,11 +1,9 @@
 ﻿using AutoMapper;
-using MoneyAPI.Helpers;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Lancamento;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace MoneyAPI.Services
 {
@@ -36,28 +34,38 @@ namespace MoneyAPI.Services
 
                 Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
                 Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                Cartao cartao = null;
+                Conta contaDestino = null;
+
                 if (lancamentoDto.CartaoId != null)
                 {
-                    Cartao cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                    cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
                 }
 
-                Lancamento lancamentoInsert = _mapper.Map<Lancamento>(lancamentoDto);
-                lancamentoInsert.UsuarioId = usuarioId;
+                if (lancamentoDto.ContaDestinoId != null) //transferencia
+                {
+                    contaDestino = await _contaRepository.GetContaById((int)lancamentoDto.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!");
+                    string obs = $"{conta.Nome} -> {contaDestino.Nome}";
+                    lancamentoDto.Observacao = lancamentoDto.Observacao != null ? obs + " - " + lancamentoDto.Observacao.TrimStart() : obs;
+                }
 
                 if (lancamentoDto.Parcelas != 0) //lancamento parcelado
                 {
-                    InsertParcelado(lancamentoDto, usuarioId, conta);
+                    InsertParcelado(lancamentoDto, usuarioId, conta, contaDestino);
                 }
                 else if (lancamentoDto.Fixo) //lancamento fixo
                 {
-                    InsertFixo(lancamentoDto, usuarioId, conta);
+                    InsertFixo(lancamentoDto, usuarioId, conta, contaDestino);
                 }
                 else //lancamento normal
                 {
+                    Lancamento lancamentoInsert = _mapper.Map<Lancamento>(lancamentoDto);
+                    lancamentoInsert.UsuarioId = usuarioId;
+
                     _repository.Add(lancamentoInsert);
 
                     if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                        AtualizarSaldo(lancamentoInsert, conta);
+                        AtualizarSaldo(lancamentoInsert, conta, contaDestino); //se o lancamento for de transferencia, ja altera o saldo nas duas contas
                     else
                         AtualizarCartao(lancamentoInsert);
 
@@ -110,7 +118,7 @@ namespace MoneyAPI.Services
         {
             lancamentoDto.PreLancamento = lancamentoDto.Data > DateOnly.FromDateTime(DateTime.Now);
 
-            lancamentoDto.Valor = lancamentoDto.Tipo == "Despesa" ? lancamentoDto.Valor * -1 : lancamentoDto.Valor;
+            lancamentoDto.Valor = lancamentoDto.Tipo == "Receita" ? lancamentoDto.Valor : lancamentoDto.Valor * -1;
 
             lancamentoDto.Parcelas = lancamentoDto.Parcelas <= 1 ? 0 : lancamentoDto.Parcelas;
 
@@ -119,7 +127,8 @@ namespace MoneyAPI.Services
             lancamentoDto.Observacao = string.IsNullOrWhiteSpace(lancamentoDto.Observacao) ? null : lancamentoDto.Observacao;
         }
 
-        private void InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta) //pr_AdicionarParcelado no banco antigo
+
+        private void InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino) //pr_AdicionarParcelado no banco antigo
         {
             bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
             decimal valorParcela = Math.Round(lancamentoDto.Valor / lancamentoDto.Parcelas, 2, MidpointRounding.AwayFromZero);
@@ -142,13 +151,13 @@ namespace MoneyAPI.Services
                 _repository.Add(lancamentoInsert);
 
                 if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                    AtualizarSaldo(lancamentoInsert, conta);
+                    AtualizarSaldo(lancamentoInsert, conta, contaDestino);
                 else
                     AtualizarCartao(lancamentoInsert);
             }
         }
 
-        private void InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta) //pr_AdicionarFixo no banco antigo
+        private void InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino) //pr_AdicionarFixo no banco antigo
         {
             bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
 
@@ -166,18 +175,25 @@ namespace MoneyAPI.Services
                 _repository.Add(lancamentoInsert);
 
                 if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                    AtualizarSaldo(lancamentoInsert, conta);
+                    AtualizarSaldo(lancamentoInsert, conta, contaDestino);
                 else
                     AtualizarCartao(lancamentoInsert);
             }
         }
 
-        private void AtualizarSaldo(Lancamento lancamento, Conta conta) //pr_AlterarSaldo no banco antigo
+        private void AtualizarSaldo(Lancamento lancamento, Conta conta, Conta? contaDestino) //pr_AlterarSaldo no banco antigo
         {
             if (lancamento.PreLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
                 return;
 
             conta.Saldo += lancamento.Valor;
+
+            if (contaDestino != null) //colocando saldo na conta destino se o lancamento for de transferencia
+            {
+                contaDestino.Saldo += lancamento.Valor * -1;
+                _contaRepository.Update(contaDestino);
+            }
+
             _contaRepository.Update(conta);
         }
 

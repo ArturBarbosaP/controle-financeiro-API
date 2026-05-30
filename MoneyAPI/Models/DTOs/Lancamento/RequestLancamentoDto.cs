@@ -6,7 +6,7 @@ namespace MoneyAPI.Models.DTOs.Lancamento
     public class RequestLancamentoDto : IValidatableObject
     {
         [Required(ErrorMessage = "Selecione o tipo do lançamento!")]
-        [InList(["Despesa", "Receita"], ErrorMessage = "O tipo do lançamento pode ser apenas Despesa ou Receita!")]
+        [InList(["Despesa", "Receita", "Transf."], ErrorMessage = "O tipo do lançamento pode ser apenas Transf., Despesa ou Receita!")]
         public string Tipo { get; set; }
 
         [Required(ErrorMessage = "Digite o valor do lançamento!")]
@@ -39,11 +39,27 @@ namespace MoneyAPI.Models.DTOs.Lancamento
 
         public int? CartaoId { get; set; }
 
-        //validação para lançamento fixo e parcelado ao mesmo tempo
+        public int? ContaDestinoId { get; set; }
+
+        //validações
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
+            bool transferencia = ContaDestinoId.HasValue && ContaDestinoId.Value != 0;
+
+            if ((transferencia && Tipo != "Transf.") || (Tipo == "Transf." && !transferencia))
+                yield return new ValidationResult("Preencha corretamente os campos para lançamento do tipo Transferência!", new[] { nameof(ContaDestinoId), nameof(Tipo) });
+
             if (Fixo && Parcelas > 1)
                 yield return new ValidationResult("O lançamento não pode ser parcelado e fixo!", new[] { nameof(Parcelas), nameof(Fixo) });
+
+            if (transferencia)
+            {
+                if (CartaoId.HasValue && CartaoId.Value != 0)
+                    yield return new ValidationResult("O lançamento do tipo Transferência não pode ter cartão!", new[] { nameof(CartaoId) });
+
+                if (ContaDestinoId == ContaId)
+                    yield return new ValidationResult("As contas de origem e destino não podem ser iguais!", new[] { nameof(ContaId), nameof(ContaDestinoId) });
+            }
         }
     }
 }
