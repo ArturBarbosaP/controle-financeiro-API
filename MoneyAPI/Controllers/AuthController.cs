@@ -41,7 +41,7 @@ namespace MoneyAPI.Controllers
         public async Task<IActionResult> Verify()
         {
             if (string.IsNullOrEmpty(Token))
-                return BadRequest();
+                return Unauthorized();
 
             ResponseDto response = await _service.VerifyAsync(Token);
 
@@ -56,7 +56,7 @@ namespace MoneyAPI.Controllers
         public async Task<IActionResult> Logout()
         {
             if (string.IsNullOrEmpty(Token))
-                return BadRequest();
+                return Unauthorized();
 
             ResponseDto response = await _service.LogoutAsync(Token);
 

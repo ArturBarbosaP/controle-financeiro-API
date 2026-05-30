@@ -81,7 +81,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ResponseDto response = await _service.DeleteAsync(UsuarioId.Value);
+            ResponseDto response = await _service.DeleteAsync(UsuarioId.Value, Token);
 
             return DefaultResponse(response);
         }

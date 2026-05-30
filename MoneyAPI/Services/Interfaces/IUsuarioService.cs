@@ -11,6 +11,6 @@ namespace MoneyAPI.Services.Interfaces
         Task<ResponseDto> CreateAsync(RequestAddUsuarioDto usuarioDto);
         Task<ResponseDto> UpdateAsync(int id, RequestUpdateUsuarioDto usuarioDto);
         Task<ResponseDto> UpdatePasswordAsync(int id, RequestPasswordUpdateUsuarioDto passwordDto);
-        Task<ResponseDto> DeleteAsync(int id);
+        Task<ResponseDto> DeleteAsync(int id, string token);
     }
 }

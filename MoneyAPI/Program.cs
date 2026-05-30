@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MoneyAPI.Data;
 using Quartz;
+using SwaggerThemes;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -103,7 +104,7 @@ var app = builder.Build();
 
 app.UseSwagger();
 
-app.UseSwaggerUI(c =>
+app.UseSwaggerUI(Theme.UniversalDark, null, c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Money API v1");
     c.RoutePrefix = string.Empty;

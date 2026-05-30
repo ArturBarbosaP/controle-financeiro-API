@@ -11,11 +11,15 @@ namespace MoneyAPI.Services
     public class UsuarioService : IUsuarioService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly ICategoriaRepository _categoryRepository;
+        private readonly IAuthService _authService;
         private readonly IMapper _mapper;
 
-        public UsuarioService(IUsuarioRepository repository, IMapper mapper)
+        public UsuarioService(IUsuarioRepository repository, ICategoriaRepository categoriaRepository, IAuthService authService, IMapper mapper)
         {
             _repository = repository;
+            _categoryRepository = categoriaRepository;
+            _authService = authService;
             _mapper = mapper;
         }
 
@@ -31,6 +35,11 @@ namespace MoneyAPI.Services
 
                 if (!await _repository.SaveChanges())
                     throw new Exception("Não foi possível criar no banco!");
+
+                _categoryRepository.AddCategoriasPadrao(usuarioInsert.Id);
+
+                if (!await _categoryRepository.SaveChanges())
+                    throw new Exception("Não foi possível criar as categorias padrões no banco!");
 
                 response.Sucesso = true;
                 response.Entidade = _mapper.Map<ResponseUsuarioDto>(usuarioInsert);
@@ -121,7 +130,7 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseDto> DeleteAsync(int id)
+        public async Task<ResponseDto> DeleteAsync(int id, string token)
         {
             ResponseDto response = new();
 
@@ -129,12 +138,28 @@ namespace MoneyAPI.Services
             {
                 Usuario usuario = await _repository.GetUsuarioById(id) ?? throw new NullReferenceException("O usuário não existe!");
 
-                _repository.Delete(usuario);
+                ResponseDto responseLogout = await _authService.LogoutAsync(token);
 
-                if (!await _repository.SaveChanges())
-                    throw new Exception("Não foi possível excluir no banco!");
+                if (!responseLogout.Sucesso)
+                {
+                    response.Sucesso = false;
+                    response.Erro = responseLogout.Erro;
+                    response.StatusCode = responseLogout.StatusCode;
+                }
+                else
+                {
+                    await _categoryRepository.DeleteCategoriasPadrao(usuario.Id);
 
-                response.Sucesso = true;
+                    if (!await _repository.SaveChanges())
+                        throw new Exception("Não foi possível excluir as categorias padrões no banco!");
+
+                    _repository.Delete(usuario);
+
+                    if (!await _repository.SaveChanges())
+                        throw new Exception("Não foi possível excluir no banco!");
+
+                    response.Sucesso = true;
+                }
             }
             catch (NullReferenceException ex)
             {
