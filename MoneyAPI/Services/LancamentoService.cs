@@ -114,19 +114,7 @@ namespace MoneyAPI.Services
             return _mapper.Map<IEnumerable<ResponseLancamentoDto>>(await _repository.GetLancamentosMensal(usuarioId, mes, ano));
         }
 
-        private void NormalizarLancamento(RequestLancamentoDto lancamentoDto)
-        {
-            lancamentoDto.PreLancamento = lancamentoDto.Data > DateOnly.FromDateTime(DateTime.Now);
-
-            lancamentoDto.Valor = lancamentoDto.Tipo == "Receita" ? lancamentoDto.Valor : lancamentoDto.Valor * -1;
-
-            lancamentoDto.Parcelas = lancamentoDto.Parcelas <= 1 ? 0 : lancamentoDto.Parcelas;
-
-            lancamentoDto.CartaoId = lancamentoDto.CartaoId == 0 ? null : lancamentoDto.CartaoId;
-
-            lancamentoDto.Observacao = string.IsNullOrWhiteSpace(lancamentoDto.Observacao) ? null : lancamentoDto.Observacao;
-        }
-
+        #region Triggers e procedures do legado
 
         private void InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino) //pr_AdicionarParcelado no banco antigo
         {
@@ -147,6 +135,7 @@ namespace MoneyAPI.Services
                     : Math.Min(lancamentoDto.Data.Day, DateTime.DaysInMonth(novaData.Year, novaData.Month)); //caso o dia do mes selecionado for maior que o ultimo dia de algum mes
 
                 lancamentoInsert.Data = new DateOnly(novaData.Year, novaData.Month, dia);
+                CalcularPreLancamento(lancamentoInsert);
 
                 _repository.Add(lancamentoInsert);
 
@@ -171,6 +160,7 @@ namespace MoneyAPI.Services
                     : Math.Min(lancamentoDto.Data.Day, DateTime.DaysInMonth(lancamentoDto.Data.Year, mes)); //caso o dia do mes selecionado for maior que o ultimo dia de algum mes
 
                 lancamentoInsert.Data = new DateOnly(lancamentoDto.Data.Year, mes, dia);
+                CalcularPreLancamento(lancamentoInsert);
 
                 _repository.Add(lancamentoInsert);
 
@@ -201,5 +191,36 @@ namespace MoneyAPI.Services
         {
             throw new NotImplementedException();
         }
+
+        #endregion
+
+        #region Auxiliares
+
+        private void NormalizarLancamento(RequestLancamentoDto lancamentoDto)
+        {
+            CalcularPreLancamento(lancamentoDto);
+
+            lancamentoDto.Valor = lancamentoDto.Tipo == "Receita" ? lancamentoDto.Valor : lancamentoDto.Valor * -1;
+
+            lancamentoDto.Parcelas = lancamentoDto.Parcelas <= 1 ? 0 : lancamentoDto.Parcelas;
+
+            lancamentoDto.CartaoId = lancamentoDto.CartaoId == 0 ? null : lancamentoDto.CartaoId;
+
+            lancamentoDto.ContaDestinoId = lancamentoDto.ContaDestinoId == 0 ? null : lancamentoDto.ContaDestinoId;
+
+            lancamentoDto.Observacao = string.IsNullOrWhiteSpace(lancamentoDto.Observacao) ? null : lancamentoDto.Observacao;
+        }
+
+        private void CalcularPreLancamento(RequestLancamentoDto lancamentoDto)
+        {
+            lancamentoDto.PreLancamento = lancamentoDto.Data > DateOnly.FromDateTime(DateTime.Now);
+        }
+
+        private void CalcularPreLancamento(Lancamento lancamento)
+        {
+            lancamento.PreLancamento = lancamento.Data > DateOnly.FromDateTime(DateTime.Now);
+        }
+
+        #endregion
     }
 }
