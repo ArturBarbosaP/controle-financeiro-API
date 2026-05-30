@@ -10,7 +10,7 @@ namespace MoneyAPI.Models.DTOs.Categoria
         public string Nome { get; set; }
 
         [Required(ErrorMessage = "Selecione o tipo da categoria!")]
-        [InList(["Despesa", "Receita", "Trasnf."], ErrorMessage = "O tipo da categoria pode ser apenas Despesa, Receita ou Transferência!")]
+        [InList(["Despesa", "Receita", "Transf."], ErrorMessage = "O tipo da categoria pode ser apenas Despesa, Receita ou Transferência!")]
         public string Tipo { get; set; }
 
         [Required(ErrorMessage = "Selecione a cor da categoria!")]

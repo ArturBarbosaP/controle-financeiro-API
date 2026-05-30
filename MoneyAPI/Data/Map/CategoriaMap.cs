@@ -30,6 +30,10 @@ namespace MoneyAPI.Data.Map
                 .IsRequired()
                 .IsFixedLength();
 
+            builder.Property(x => x.Padrao)
+                .HasColumnName("PADRAO")
+                .HasColumnType("tinyint(1)");
+
             //relacionamentos
 
             builder.Property(x => x.UsuarioId)

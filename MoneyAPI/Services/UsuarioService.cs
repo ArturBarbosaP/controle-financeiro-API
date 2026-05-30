@@ -5,6 +5,7 @@ using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
+using System.Threading.Tasks;
 
 namespace MoneyAPI.Services
 {
@@ -36,7 +37,7 @@ namespace MoneyAPI.Services
                 if (!await _repository.SaveChanges())
                     throw new Exception("Não foi possível criar no banco!");
 
-                _categoryRepository.AddCategoriasPadrao(usuarioInsert.Id);
+                AddCategoriasPadrao(usuarioInsert.Id);
 
                 if (!await _categoryRepository.SaveChanges())
                     throw new Exception("Não foi possível criar as categorias padrões no banco!");
@@ -148,9 +149,9 @@ namespace MoneyAPI.Services
                 }
                 else
                 {
-                    await _categoryRepository.DeleteCategoriasPadrao(usuario.Id);
+                    await DeleteCategoriasPadrao(usuario.Id);
 
-                    if (!await _repository.SaveChanges())
+                    if (!await _categoryRepository.SaveChanges())
                         throw new Exception("Não foi possível excluir as categorias padrões no banco!");
 
                     _repository.Delete(usuario);
@@ -191,6 +192,23 @@ namespace MoneyAPI.Services
         public async Task<IEnumerable<ResponseUsuarioDto>> GetUsuariosAsync()
         {
             return _mapper.Map<IEnumerable<ResponseUsuarioDto>>(await _repository.GetUsuarios());
+        }
+
+        private void AddCategoriasPadrao(int usuarioId)
+        {
+            foreach (Categoria categoria in Utils.categoriasPadrões)
+            {
+                categoria.UsuarioId = usuarioId;
+                _categoryRepository.Add(categoria);
+            }
+        }
+
+        private async Task DeleteCategoriasPadrao(int usuarioId)
+        {
+            foreach (Categoria categoria in await _categoryRepository.GetCategoriasPadroes(usuarioId))
+            {
+                _categoryRepository.Delete(categoria);
+            }
         }
     }
 }

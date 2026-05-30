@@ -8,6 +8,8 @@
 
         public string Cor { get; set; }
 
+        public bool Padrao { get; set; }
+
         public int UsuarioId { get; set; }
 
         public Usuario Usuario { get; set; }

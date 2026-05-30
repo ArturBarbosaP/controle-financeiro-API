@@ -53,6 +53,14 @@ namespace MoneyAPI.Services
             {
                 Categoria categoria = await _repository.GetCategoriaById(id, usuarioId) ?? throw new NullReferenceException("A categoria não existe!");
 
+                if (categoria.Padrao)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Não é possível alterar uma categoria padrão do sistema!";
+                    response.StatusCode = 401;
+                    return response;
+                }
+
                 Categoria categoriaUpdate = _mapper.Map(categoriaDto, categoria);
                 _repository.Update(categoriaUpdate);
 
@@ -86,6 +94,14 @@ namespace MoneyAPI.Services
             try
             {
                 Categoria categoria = await _repository.GetCategoriaById(id, usuarioId) ?? throw new NullReferenceException("A categoria não existe!");
+
+                if (categoria.Padrao)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Não é possível excluir uma categoria padrão do sistema!";
+                    response.StatusCode = 401;
+                    return response;
+                }
 
                 _repository.Delete(categoria);
 

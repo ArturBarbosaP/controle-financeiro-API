@@ -8,6 +8,8 @@
 
         public string Tipo { get; set; }
 
+        public bool Padrao { get; set; }
+
         public string Cor { get; set; }
     }
 }
