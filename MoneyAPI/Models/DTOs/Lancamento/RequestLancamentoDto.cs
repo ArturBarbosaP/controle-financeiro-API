@@ -52,6 +52,9 @@ namespace MoneyAPI.Models.DTOs.Lancamento
             if (Fixo && Parcelas > 1)
                 yield return new ValidationResult("O lançamento não pode ser parcelado e fixo!", new[] { nameof(Parcelas), nameof(Fixo) });
 
+            if (Tipo == "Receita" && (CartaoId.HasValue && CartaoId.Value != 0))
+                yield return new ValidationResult("O lançamento do tipo Receita não pode ter cartão!", new[] { nameof(CartaoId) });
+
             if (transferencia)
             {
                 if (CartaoId.HasValue && CartaoId.Value != 0)

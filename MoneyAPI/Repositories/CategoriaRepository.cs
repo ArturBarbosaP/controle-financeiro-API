@@ -46,6 +46,14 @@ namespace MoneyAPI.Repositories
                 .ToListAsync();
         }
 
+        public async Task<Categoria> GetCategoriaPadraoFatura(int usuarioId)
+        {
+            return await _context.Categorias
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(c => c.Nome == "Pagamento de fatura" && c.Padrao)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IEnumerable<Categoria>> GetCategoriasDeDespesa(int usuarioId)
         {
             return await _context.Categorias

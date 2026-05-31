@@ -51,11 +51,11 @@ namespace MoneyAPI.Services
 
                 if (lancamentoDto.Parcelas != 0) //lancamento parcelado
                 {
-                    InsertParcelado(lancamentoDto, usuarioId, conta, contaDestino);
+                    await InsertParcelado(lancamentoDto, usuarioId, conta, contaDestino, cartao);
                 }
                 else if (lancamentoDto.Fixo) //lancamento fixo
                 {
-                    InsertFixo(lancamentoDto, usuarioId, conta, contaDestino);
+                    await InsertFixo(lancamentoDto, usuarioId, conta, contaDestino, cartao);
                 }
                 else //lancamento normal
                 {
@@ -65,9 +65,9 @@ namespace MoneyAPI.Services
                     _repository.Add(lancamentoInsert);
 
                     if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                        AtualizarSaldo(lancamentoInsert, conta, contaDestino); //se o lancamento for de transferencia, ja altera o saldo nas duas contas
+                        AtualizarSaldo(lancamentoInsert.Valor, lancamentoInsert.PreLancamento, conta, contaDestino); //se o lancamento for de transferencia, ja altera o saldo nas duas contas
                     else
-                        AtualizarCartao(lancamentoInsert);
+                        await AtualizarCartao(lancamentoInsert, cartao!, usuarioId, false);
 
                     response.Entidade = _mapper.Map<ResponseLancamentoDto>(lancamentoInsert);
                 }
@@ -116,11 +116,17 @@ namespace MoneyAPI.Services
 
         #region Triggers e procedures do legado
 
-        private void InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino) //pr_AdicionarParcelado no banco antigo
+        private async Task InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino, Cartao? cartao) //pr_AdicionarParcelado no banco antigo
         {
             bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
             decimal valorParcela = Math.Round(lancamentoDto.Valor / lancamentoDto.Parcelas, 2, MidpointRounding.AwayFromZero);
             decimal valorPrimeira = lancamentoDto.Valor - (valorParcela * (lancamentoDto.Parcelas - 1));
+
+            if (lancamentoDto.CartaoId != null) //se tiver cartao, atualiza o limite e o valor parcelado
+            {
+                AtualizarLimite(lancamentoDto.Valor, cartao!);
+                AtualizarValorParcelado(lancamentoDto.Valor, cartao!);
+            }
 
             for (int i = 1; i <= lancamentoDto.Parcelas; i++)
             {
@@ -140,13 +146,13 @@ namespace MoneyAPI.Services
                 _repository.Add(lancamentoInsert);
 
                 if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                    AtualizarSaldo(lancamentoInsert, conta, contaDestino);
+                    AtualizarSaldo(lancamentoInsert.Valor, lancamentoInsert.PreLancamento, conta, contaDestino);
                 else
-                    AtualizarCartao(lancamentoInsert);
+                    await AtualizarCartao(lancamentoInsert, cartao!, usuarioId, true);
             }
         }
 
-        private void InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino) //pr_AdicionarFixo no banco antigo
+        private async Task InsertFixo(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino, Cartao? cartao) //pr_AdicionarFixo no banco antigo
         {
             bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
 
@@ -165,31 +171,101 @@ namespace MoneyAPI.Services
                 _repository.Add(lancamentoInsert);
 
                 if (lancamentoInsert.CartaoId == null) //se o lancamento tiver cartao, atualiza o limite e o valor da fatura
-                    AtualizarSaldo(lancamentoInsert, conta, contaDestino);
+                    AtualizarSaldo(lancamentoInsert.Valor, lancamentoInsert.PreLancamento, conta, contaDestino);
                 else
-                    AtualizarCartao(lancamentoInsert);
+                    await AtualizarCartao(lancamentoInsert, cartao!, usuarioId, false);
             }
         }
 
-        private void AtualizarSaldo(Lancamento lancamento, Conta conta, Conta? contaDestino) //pr_AlterarSaldo no banco antigo
+        private void AtualizarSaldo(decimal valor, bool preLancamento, Conta conta, Conta? contaDestino) //pr_AlterarSaldo no banco antigo
         {
-            if (lancamento.PreLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
+            if (preLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
                 return;
 
-            conta.Saldo += lancamento.Valor;
+            conta.Saldo += valor;
 
             if (contaDestino != null) //colocando saldo na conta destino se o lancamento for de transferencia
             {
-                contaDestino.Saldo += lancamento.Valor * -1;
+                contaDestino.Saldo += valor * -1;
                 _contaRepository.Update(contaDestino);
             }
 
             _contaRepository.Update(conta);
         }
 
-        private void AtualizarCartao(Lancamento lancamento)
+        private void AtualizarLimite(decimal valor, Cartao cartao)
         {
-            throw new NotImplementedException();
+            cartao.LimiteDisponivel += valor;
+            _cartaoRepository.Update(cartao);
+        }
+
+        private void AtualizarValorParcelado(decimal valor, Cartao cartao)
+        {
+            cartao.ValorParcelado += valor * -1;
+            _cartaoRepository.Update(cartao);
+        }
+
+        private async Task AtualizarCartao(Lancamento lancamento, Cartao cartao, int usuarioId, bool parcelado) //pr_InserirFatura no banco antigo
+        {
+            Categoria categoriaFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
+            DateOnly dataFinalFatura = cartao.DataFechamento;
+            DateOnly dataInicioFatura = cartao.DataFechamento.AddMonths(-1).AddDays(1);
+            int addMonths = 0;
+
+            if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura)) //fatura atual
+            {
+                AtualizarLimite(lancamento.Valor, cartao);
+            }
+            else if (lancamento.Data > dataFinalFatura)
+            {
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
+                {
+                    addMonths++;
+                    dataInicioFatura = dataInicioFatura.AddMonths(1);
+                    dataFinalFatura = dataFinalFatura.AddMonths(1);
+                }
+            }
+            else if (lancamento.Data < dataInicioFatura)
+            {
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
+                {
+                    addMonths--;
+                    dataInicioFatura = dataInicioFatura.AddMonths(-1);
+                    dataFinalFatura = dataFinalFatura.AddMonths(-1);
+                }
+            }
+
+            Lancamento fatura = await _repository.GetLancamentoFaturaCartao(cartao.Nome, cartao.DataVencimento.AddMonths(addMonths), cartao.ContaId, categoriaFatura.Id, usuarioId);
+
+            if (fatura == null) //sem lancamento de fatura, adicionando um
+            {
+                Lancamento lancamentoInsert = new()
+                {
+                    CategoriaId = categoriaFatura.Id,
+                    ContaId = cartao.ContaId,
+                    Tipo = "Despesa",
+                    Valor = lancamento.Valor,
+                    Descricao = cartao.Nome,
+                    Data = cartao.DataVencimento.AddMonths(addMonths),
+                    Observacao = $"Data de fechamento: {cartao.DataFechamento.ToString("dd/MM/yyyy")}",
+                    UsuarioId = usuarioId
+                };
+
+                CalcularPreLancamento(lancamentoInsert);
+
+                _repository.Add(lancamentoInsert);
+
+                //atualizando saldo direto do lancamento inserido
+                AtualizarSaldo(lancamentoInsert.Valor, lancamentoInsert.PreLancamento, cartao.Conta, null);
+            }
+            else
+            {
+                fatura.Valor += lancamento.Valor;
+                _repository.Update(fatura);
+
+                //tirando o valor do lancamento na fatura, atualizando saldo se a fatura for pre lancamento
+                AtualizarSaldo(lancamento.Valor, fatura.PreLancamento, cartao.Conta, null);
+            }
         }
 
         #endregion

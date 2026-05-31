@@ -48,5 +48,16 @@ namespace MoneyAPI.Repositories
                     .ThenBy(x => ordem.ContainsKey(x.Tipo) ? ordem[x.Tipo] : 99));
 
         }
+
+        public async Task<Lancamento> GetLancamentoFaturaCartao(string descricao, DateOnly data, int contaId, int categoriaFaturaId, int usuarioId)
+        {
+            return await _context.Lancamentos
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.Descricao == descricao
+                    && l.Data == data
+                    && l.ContaId == contaId
+                    && l.CategoriaId == categoriaFaturaId)
+                .FirstOrDefaultAsync();
+        }
     }
 }
