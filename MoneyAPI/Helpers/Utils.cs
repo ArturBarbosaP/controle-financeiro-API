@@ -4,7 +4,7 @@ namespace MoneyAPI.Helpers
 {
     public static class Utils
     {
-        public static List<Categoria> categoriasPadrões =
+        public static readonly List<Categoria> categoriasPadrões =
         [
             new Categoria
             {
@@ -19,5 +19,12 @@ namespace MoneyAPI.Helpers
                 Cor = "#BCBCBC"
             }
         ];
+
+        public static readonly Dictionary<string, int> ordenacaoPadrao = new()
+        {
+            { "Receita", 1 },
+            { "Transf.", 2 },
+            { "Despesa", 3 }
+        };
     }
 }

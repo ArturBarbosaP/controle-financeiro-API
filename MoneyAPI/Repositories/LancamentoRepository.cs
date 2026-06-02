@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyAPI.Data;
+using MoneyAPI.Helpers;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 
@@ -8,12 +9,6 @@ namespace MoneyAPI.Repositories
     public class LancamentoRepository : BaseRepository, ILancamentoRepository
     {
         private readonly ApplicationContext _context;
-        private readonly Dictionary<string, int> ordem = new()
-        {
-            { "Receita", 1 },
-            { "Transf.", 2 },
-            { "Despesa", 3 }
-        };
 
         public LancamentoRepository(ApplicationContext context) : base(context)
         {
@@ -45,7 +40,7 @@ namespace MoneyAPI.Repositories
                 .ToListAsync()
                 .ContinueWith(t => t.Result
                     .OrderBy(x => x.Data)
-                    .ThenBy(x => ordem.ContainsKey(x.Tipo) ? ordem[x.Tipo] : 99));
+                    .ThenBy(x => Utils.ordenacaoPadrao.ContainsKey(x.Tipo) ? Utils.ordenacaoPadrao[x.Tipo] : 99));
 
         }
 

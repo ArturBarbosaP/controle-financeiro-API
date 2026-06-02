@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyAPI.Data;
+using MoneyAPI.Helpers;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 
@@ -35,7 +36,9 @@ namespace MoneyAPI.Repositories
         {
             return await _context.Categorias
                 .Where(u => u.UsuarioId == usuarioId)
-                .ToListAsync();
+                .ToListAsync()
+                .ContinueWith(t => t.Result
+                .OrderBy(c => Utils.ordenacaoPadrao.ContainsKey(c.Tipo) ? Utils.ordenacaoPadrao[c.Tipo] : 99));
         }
 
         public async Task<IEnumerable<Categoria>> GetCategoriasPadroes(int usuarioId)
