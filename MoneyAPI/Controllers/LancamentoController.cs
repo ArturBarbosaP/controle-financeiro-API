@@ -51,6 +51,21 @@ namespace MoneyAPI.Controllers
             return DefaultResponse(response);
         }
 
+        [SwaggerOperation(Summary = "Deletar lançamentos fixos", Description = "Deleta os lançamentos fixos baseado em um lançamento passando seu ID")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [HttpDelete("{id}/[action]")]
+        public async Task<IActionResult> Fixo(int id)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            ResponseDto response = await _service.DeleteFixoAsync(id, UsuarioId.Value);
+
+            return DefaultResponse(response);
+        }
+
         [SwaggerOperation(Summary = "Listar lançamentos", Description = "Retorna todos os lançamentos do mês selecionado para o usuário autenticado")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
         [ProducesResponseType(401)]

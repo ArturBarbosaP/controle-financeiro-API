@@ -106,9 +106,8 @@ namespace MoneyAPI.Services
             try
             {
                 Lancamento lancamento = await _repository.GetLancamentoById(id, usuarioId) ?? throw new NullReferenceException("O lançamento não existe!");
-
+                
                 Conta conta = await _contaRepository.GetContaById(lancamento.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
-                Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamento.CategoriaId, lancamento.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
                 
                 Cartao? cartao = lancamento.CartaoId != null ? await _cartaoRepository.GetCartaoById((int)lancamento.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!") : null;
                 Conta? contaDestino = lancamento.ContaDestinoId != null ? await _contaRepository.GetContaById((int)lancamento.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!") : null;
@@ -131,6 +130,63 @@ namespace MoneyAPI.Services
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
 
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseDto> DeleteFixoAsync(int id, int usuarioId)
+        {
+            ResponseDto response = new();
+
+            try
+            {
+                Lancamento lancamento = await _repository.GetLancamentoById(id, usuarioId) ?? throw new NullReferenceException("O lançamento não existe!");
+
+                if (!lancamento.Fixo)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "O lançamento não é Fixo!";
+                    response.StatusCode = 400;
+                    return response;
+                }
+
+                Conta conta = await _contaRepository.GetContaById(lancamento.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+
+                Cartao? cartao = lancamento.CartaoId != null ? await _cartaoRepository.GetCartaoById((int)lancamento.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!") : null;
+                Conta? contaDestino = lancamento.ContaDestinoId != null ? await _contaRepository.GetContaById((int)lancamento.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!") : null;
+
+                List<Lancamento> lancamentos = await _repository.GetLancamentosFixosByLancamento(lancamento, usuarioId);
+
+                if (lancamentos.Count == 0)
+                    throw new NullReferenceException("O lançamento não existe!");
+
+                foreach (Lancamento l in lancamentos)
+                {
+                    if (cartao == null) //apenas voltar com o valor do lancamento pro saldo
+                        AtualizarSaldo(contaDestino == null ? l.Valor * -1 : l.Valor, l.PreLancamento, conta, contaDestino); //mantendo o valor pra lancamento de transferencia
+                    else
+                        await AtualizarCartao(l, cartao, usuarioId, false, true);
+
+                    _repository.Delete(l);
+                }
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível excluir no banco!");
+
+                response.Sucesso = true;
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
             }
             catch (Exception ex)
             {

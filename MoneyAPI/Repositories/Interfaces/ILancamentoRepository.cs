@@ -9,5 +9,7 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<Lancamento> GetLancamentoById(int id, int usuarioId);
 
         Task<Lancamento> GetLancamentoFaturaCartao(string descricao, DateOnly data, int contaId, int categoriaFaturaId, int usuarioId);
+
+        Task<List<Lancamento>> GetLancamentosFixosByLancamento(Lancamento lancamento, int usuarioId);
     }
 }

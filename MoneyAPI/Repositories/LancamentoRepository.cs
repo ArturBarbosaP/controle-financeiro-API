@@ -54,5 +54,19 @@ namespace MoneyAPI.Repositories
                     && l.CategoriaId == categoriaFaturaId)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<Lancamento>> GetLancamentosFixosByLancamento(Lancamento lancamento, int usuarioId)
+        {
+            return await _context.Lancamentos
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.ContaId == lancamento.ContaId
+                    && l.ContaDestinoId == lancamento.ContaDestinoId
+                    && l.CartaoId == lancamento.CartaoId
+                    && l.CategoriaId == lancamento.CategoriaId
+                    && l.Descricao == lancamento.Descricao
+                    && l.Tipo == lancamento.Tipo
+                    && l.Data >= lancamento.Data)
+                .ToListAsync();
+        }
     }
 }

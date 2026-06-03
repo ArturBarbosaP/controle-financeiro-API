@@ -10,5 +10,6 @@ namespace MoneyAPI.Services.Interfaces
         Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId);
         Task<ResponseDto> UpdateAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId);
         Task<ResponseDto> DeleteAsync(int id, int usuarioId);
+        Task<ResponseDto> DeleteFixoAsync(int id, int usuarioId);
     }
 }
