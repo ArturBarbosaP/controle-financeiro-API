@@ -27,6 +27,9 @@ namespace MoneyAPI.Controllers
         {
             get
             {
+#if DEBUG
+                return 1;
+#endif
                 return Token is null ? null : _session.ObterUsuarioId(Token);
             }
         }

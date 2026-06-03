@@ -34,8 +34,8 @@ namespace MoneyAPI.Services
 
                 Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
                 Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
-                Cartao cartao = null;
-                Conta contaDestino = null;
+                Cartao? cartao = null;
+                Conta? contaDestino = null;
 
                 if (lancamentoDto.CartaoId != null)
                 {
@@ -99,9 +99,47 @@ namespace MoneyAPI.Services
             throw new NotImplementedException();
         }
 
-        public Task<ResponseDto> DeleteAsync(int id, int usuarioId)
+        public async Task<ResponseDto> DeleteAsync(int id, int usuarioId)
         {
-            throw new NotImplementedException();
+            ResponseDto response = new();
+
+            try
+            {
+                Lancamento lancamento = await _repository.GetLancamentoById(id, usuarioId) ?? throw new NullReferenceException("O lançamento não existe!");
+
+                Conta conta = await _contaRepository.GetContaById(lancamento.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamento.CategoriaId, lancamento.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                
+                Cartao? cartao = lancamento.CartaoId != null ? await _cartaoRepository.GetCartaoById((int)lancamento.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!") : null;
+                Conta? contaDestino = lancamento.ContaDestinoId != null ? await _contaRepository.GetContaById((int)lancamento.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!") : null;
+
+                if (cartao == null) //apenas voltar com o valor do lancamento pro saldo
+                    AtualizarSaldo(contaDestino == null ? lancamento.Valor * -1 : lancamento.Valor, lancamento.PreLancamento, conta, contaDestino); //mantendo o valor pra lancamento de transferencia
+                else
+                    await AtualizarCartao(lancamento, cartao, usuarioId, false, true);
+
+                _repository.Delete(lancamento);
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível excluir no banco!");
+
+                response.Sucesso = true;
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
         }
 
         public async Task<ResponseLancamentoDto> GetLancamentoByIdAsync(int id, int usuarioId)
@@ -205,8 +243,10 @@ namespace MoneyAPI.Services
             _cartaoRepository.Update(cartao);
         }
 
-        private async Task AtualizarCartao(Lancamento lancamento, Cartao cartao, int usuarioId, bool parcelado) //pr_InserirFatura no banco antigo
+        private async Task AtualizarCartao(Lancamento lancamento, Cartao cartao, int usuarioId, bool parcelado, bool excluir = false) //pr_InserirFatura e pr_AlterarFatura no banco antigo
         {
+            decimal valorOperacao = excluir ? lancamento.Valor * -1 : lancamento.Valor;
+
             Categoria categoriaFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
             DateOnly dataFinalFatura = cartao.DataFechamento;
             DateOnly dataInicioFatura = cartao.DataFechamento.AddMonths(-1).AddDays(1);
@@ -214,7 +254,7 @@ namespace MoneyAPI.Services
 
             if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura)) //fatura atual
             {
-                AtualizarLimite(lancamento.Valor, cartao);
+                AtualizarLimite(valorOperacao, cartao);
             }
             else if (lancamento.Data > dataFinalFatura)
             {
@@ -239,6 +279,9 @@ namespace MoneyAPI.Services
 
             if (fatura == null) //sem lancamento de fatura, adicionando um
             {
+                if (excluir)
+                    throw new Exception($"Fatura do cartão {cartao.Nome} não encontrada!");
+
                 Lancamento lancamentoInsert = new()
                 {
                     CategoriaId = categoriaFatura.Id,
@@ -260,11 +303,11 @@ namespace MoneyAPI.Services
             }
             else
             {
-                fatura.Valor += lancamento.Valor;
+                fatura.Valor += valorOperacao;
                 _repository.Update(fatura);
 
                 //tirando o valor do lancamento na fatura, atualizando saldo se a fatura for pre lancamento
-                AtualizarSaldo(lancamento.Valor, fatura.PreLancamento, cartao.Conta, null);
+                AtualizarSaldo(valorOperacao, fatura.PreLancamento, cartao.Conta, null);
             }
         }
 
