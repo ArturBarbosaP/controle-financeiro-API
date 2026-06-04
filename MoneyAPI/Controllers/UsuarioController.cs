@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
+using MoneyAPI.Models.DTOs.Auth;
 using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Services.Interfaces;
 using Swashbuckle.AspNetCore.Annotations;
@@ -12,11 +13,15 @@ namespace MoneyAPI.Controllers
     public class UsuarioController : BaseController
     {
         private readonly IUsuarioService _service;
+        private readonly IAuthService _authService;
 
-        public UsuarioController(IUsuarioService service, Session session) : base(session)
+        public UsuarioController(IUsuarioService service, IAuthService authService, Session session) : base(session)
         {
             _service = service;
+            _authService = authService;
         }
+
+        #region Usuarios
 
         [SwaggerOperation(Summary = "Criar usuário", Description = "Cria um novo usuário")]
         [ProducesResponseType(200)]
@@ -107,7 +112,7 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(typeof(ResponseUsuarioDto), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
-        [HttpGet("[action]/{id?}")]
+        [HttpGet("{id?}")]
         public async Task<IActionResult> GetById(int? id = null)
         {
             if (UsuarioId == null)
@@ -146,5 +151,56 @@ namespace MoneyAPI.Controllers
 
             return Ok(usuario);
         }
+
+        #endregion
+
+        #region Autenticacao
+
+        [SwaggerOperation(Summary = "Fazer login", Description = "Faz login no sistema com Usuário e Senha")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [HttpPost("Auth/[action]")]
+        public async Task<IActionResult> Login([FromBody] RequestLoginDto loginDTO)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseDto response = await _authService.LoginAsync(loginDTO);
+
+            return DefaultResponse(response);
+        }
+
+        [SwaggerOperation(Summary = "Verificar sessão ativa", Description = "Verifica se a sessão está ativa")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [HttpGet("Auth/[action]")]
+        public async Task<IActionResult> Verify()
+        {
+            if (string.IsNullOrEmpty(Token))
+                return Unauthorized();
+
+            ResponseDto response = await _authService.VerifyAsync(Token);
+
+            return DefaultResponse(response);
+        }
+
+        [SwaggerOperation(Summary = "Fazer logout", Description = "Faz logout do sistema")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [HttpGet("Auth/[action]")]
+        public async Task<IActionResult> Logout()
+        {
+            if (string.IsNullOrEmpty(Token))
+                return Unauthorized();
+
+            ResponseDto response = await _authService.LogoutAsync(Token);
+
+            return DefaultResponse(response);
+        }
+
+        #endregion
     }
 }
