@@ -24,6 +24,14 @@ namespace MoneyAPI.Services
 
             try
             {
+                if (await _repository.GetCategoriaByNome(categoriaDto.Nome, categoriaDto.Tipo, usuarioId) != null) //bloquear se ja existir categoria com o mesmo nome
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Já existe uma categoria com esse nome!";
+                    response.StatusCode = 400;
+                    return response;
+                }
+
                 Categoria categoriaInsert = _mapper.Map<Categoria>(categoriaDto);
                 categoriaInsert.UsuarioId = usuarioId;
 
@@ -52,6 +60,14 @@ namespace MoneyAPI.Services
             try
             {
                 Categoria categoria = await _repository.GetCategoriaById(id, usuarioId) ?? throw new NullReferenceException("A categoria não existe!");
+
+                if (categoriaDto.Nome != categoria.Nome && await _repository.GetCategoriaByNome(categoriaDto.Nome, categoriaDto.Tipo, usuarioId) != null)
+                {   //bloquear se ja existir categoria com o mesmo nome, caso o nome seja alterado
+                    response.Sucesso = false;
+                    response.Erro = "Já existe uma categoria com o novo nome!";
+                    response.StatusCode = 400;
+                    return response;
+                }
 
                 if (categoria.Padrao)
                 {

@@ -28,5 +28,13 @@ namespace MoneyAPI.Repositories
                 .Where(u => u.UsuarioId == usuarioId)
                 .ToListAsync();
         }
+
+        public async Task<Conta> GetContaByNome(string nome, int usuarioId)
+        {
+            return await _context.Contas
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(c => c.Nome == nome)
+                .FirstOrDefaultAsync();
+        }
     }
 }

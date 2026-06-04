@@ -30,5 +30,14 @@ namespace MoneyAPI.Repositories
                 .Where(co => co.Conta.UsuarioId == usuarioId)
                 .ToListAsync();
         }
+
+        public async Task<Cartao> GetCartaoByNome(string nome, int usuarioId)
+        {
+            return await _context.Cartoes
+                .Include(c => c.Conta)
+                .Where(co => co.Conta.UsuarioId == usuarioId)
+                .Where(ca => ca.Nome == nome)
+                .FirstOrDefaultAsync();
+        }
     }
 }

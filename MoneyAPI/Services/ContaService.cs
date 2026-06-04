@@ -24,6 +24,14 @@ namespace MoneyAPI.Services
 
             try
             {
+                if (await _repository.GetContaByNome(contaDto.Nome, usuarioId) != null) //bloquear se ja existir conta com o mesmo nome
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Já existe uma conta com esse nome!";
+                    response.StatusCode = 400;
+                    return response;
+                }
+
                 Conta contaInsert = _mapper.Map<Conta>(contaDto);
                 contaInsert.UsuarioId = usuarioId;
 
@@ -52,6 +60,14 @@ namespace MoneyAPI.Services
             try
             {
                 Conta conta = await _repository.GetContaById(id, usuarioId) ?? throw new NullReferenceException("A conta não existe!");
+
+                if (contaDto.Nome != conta.Nome && await _repository.GetContaByNome(contaDto.Nome, usuarioId) != null)
+                {   //bloquear se ja existir conta com o mesmo nome, caso o nome seja alterado
+                    response.Sucesso = false;
+                    response.Erro = "Já existe uma conta com o novo nome!";
+                    response.StatusCode = 400;
+                    return response;
+                }
 
                 Conta contaUpdate = _mapper.Map(contaDto, conta);
                 _repository.Update(contaUpdate);

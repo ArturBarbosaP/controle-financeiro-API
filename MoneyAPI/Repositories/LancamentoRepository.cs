@@ -55,6 +55,16 @@ namespace MoneyAPI.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<IEnumerable<Lancamento>> GetLancamentosFaturasCartao(string descricao, int contaId, int categoriaFaturaId, int usuarioId)
+        {
+            return await _context.Lancamentos
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.Descricao == descricao
+                    && l.ContaId == contaId
+                    && l.CategoriaId == categoriaFaturaId)
+                .ToListAsync();
+        }
+
         public async Task<List<Lancamento>> GetLancamentosFixosByLancamento(Lancamento lancamento, int usuarioId)
         {
             return await _context.Lancamentos

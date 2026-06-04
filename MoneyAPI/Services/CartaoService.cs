@@ -11,12 +11,16 @@ namespace MoneyAPI.Services
     {
         private readonly ICartaoRepository _repository;
         private readonly IContaRepository _contaRepository;
+        private readonly ICategoriaRepository _categoriaRepository;
+        private readonly ILancamentoRepository _lancamentoRepository;
         private readonly IMapper _mapper;
 
-        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository,  IMapper mapper)
+        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper)
         {
             _repository = repository;
             _contaRepository = contaRepository;
+            _categoriaRepository = categoriaRepository;
+            _lancamentoRepository = lancamentoRepository;
             _mapper = mapper;
         }
 
@@ -27,6 +31,15 @@ namespace MoneyAPI.Services
             try
             {
                 Conta conta = await _contaRepository.GetContaById(cartaoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+
+                if (await _repository.GetCartaoByNome(cartaoDto.Nome, usuarioId) != null) //bloquear se ja existir cartao com o mesmo nome
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Já existe um cartão com esse nome!";
+                    response.StatusCode = 400;
+                    return response;
+                }
+
                 Cartao cartaoInsert = _mapper.Map<Cartao>(cartaoDto);
 
                 _repository.Add(cartaoInsert);
@@ -60,6 +73,30 @@ namespace MoneyAPI.Services
             try
             {
                 Cartao cartao = await _repository.GetCartaoById(id, usuarioId) ?? throw new NullReferenceException("O cartão não existe!");
+
+                bool alteracaoNome = cartaoDto.Nome != cartao.Nome;
+
+                if (alteracaoNome)
+                {
+                    if (await _repository.GetCartaoByNome(cartaoDto.Nome, usuarioId) != null)
+                    {
+                        //bloquear se ja existir cartao com o mesmo nome, caso o nome seja alterado
+                        response.Sucesso = false;
+                        response.Erro = "Já existe um cartão com esse nome!";
+                        response.StatusCode = 400;
+                        return response;
+                    }
+
+                    Categoria categoriaFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
+
+                    IEnumerable<Lancamento> lancamentos = await _lancamentoRepository.GetLancamentosFaturasCartao(cartao.Nome, cartao.ContaId, categoriaFatura.Id, usuarioId);
+
+                    foreach (Lancamento l in lancamentos)
+                    {
+                        l.Descricao = cartaoDto.Nome;
+                        _lancamentoRepository.Update(l); //atualizando o novo nome nas faturas
+                    }
+                }
 
                 Cartao cartaoUpdate = _mapper.Map(cartaoDto, cartao);
                 _repository.Update(cartaoUpdate);

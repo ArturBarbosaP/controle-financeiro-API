@@ -64,5 +64,13 @@ namespace MoneyAPI.Repositories
                 .Where(c => c.Tipo == "Despesa")
                 .ToListAsync();
         }
+
+        public async Task<Categoria> GetCategoriaByNome(string nome, string tipo, int usuarioId)
+        {
+            return await _context.Categorias
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(c => c.Nome == nome && c.Tipo == tipo)
+                .FirstOrDefaultAsync();
+        }
     }
 }
