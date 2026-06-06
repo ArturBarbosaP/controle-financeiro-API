@@ -130,7 +130,10 @@ namespace MoneyAPI.Services
                     return response;
                 }
 
-                AtualizarSaldo(lancamento, lancamentoDto, conta, contaDestino);
+                if (lancamentoDto.CartaoId == null && lancamento.CartaoId == null)
+                    AtualizarSaldo(lancamento, lancamentoDto, conta, contaDestino);
+                else
+                    await AtualizarCartao(lancamento, lancamentoDto, cartao!, conta, usuarioId);
 
                 Lancamento lancamentoUpdate = _mapper.Map(lancamentoDto, lancamento);
                 _repository.Update(lancamentoUpdate);
@@ -353,7 +356,7 @@ namespace MoneyAPI.Services
             _contaRepository.Update(conta);
         }
 
-        private void AtualizarSaldo(decimal valor, bool preLancamento, Conta conta, Conta? contaDestino) //pr_AlterarSaldo no banco antigo
+        private void AtualizarSaldo(decimal valor, bool preLancamento, Conta conta, Conta? contaDestino = null) //pr_AlterarSaldo no banco antigo
         {
             if (preLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
                 return;
@@ -449,6 +452,34 @@ namespace MoneyAPI.Services
 
                 //tirando o valor do lancamento na fatura, atualizando saldo se a fatura for pre lancamento
                 AtualizarSaldo(valorOperacao, fatura.PreLancamento, cartao.Conta, null);
+            }
+        }
+
+        private async Task AtualizarCartao(Lancamento antigo, RequestLancamentoDto lancamentoDto, Cartao novoCartao, Conta conta, int usuarioId)
+        {
+            Lancamento novo = _mapper.Map<Lancamento>(lancamentoDto);
+            Cartao? antigoCartao = null;
+
+            bool antigoTemCartao = antigo.CartaoId != null;
+            bool novoTemCartao = novo.CartaoId != null;
+
+            if (antigoTemCartao)
+                antigoCartao = await _cartaoRepository.GetCartaoById((int)antigo.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+
+            if (!antigoTemCartao && novoTemCartao) //não tinha cartão, agora tem
+            {
+                await AtualizarCartao(novo, novoCartao, usuarioId, false);
+                AtualizarSaldo(antigo.Valor * -1, antigo.PreLancamento, conta); //voltando o valor para o saldo
+            }
+            else if (antigoTemCartao && !novoTemCartao) //tinha cartão, agora não tem
+            {
+                await AtualizarCartao(antigo, antigoCartao!, usuarioId, false, true);
+                AtualizarSaldo(novo.Valor, novo.PreLancamento, conta); //tirando o valor do saldo    
+            }
+            else if (antigoTemCartao && novoTemCartao) //tinha e tem cartão, mesmo sendo diferentes
+            {
+                await AtualizarCartao(novo, novoCartao, usuarioId, false);
+                await AtualizarCartao(antigo, antigoCartao!, usuarioId, false, true);
             }
         }
 
