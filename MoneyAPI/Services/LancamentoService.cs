@@ -94,9 +94,68 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public Task<ResponseDto> UpdateAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId)
+        public async Task<ResponseDto> UpdateAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId)
         {
-            throw new NotImplementedException();
+            ResponseDto response = new();
+
+            try
+            {
+                NormalizarLancamento(lancamentoDto);
+
+                Lancamento lancamento = await _repository.GetLancamentoById(id, usuarioId) ?? throw new NullReferenceException("O lançamento não existe!");
+
+                Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                Cartao? cartao = null;
+                Conta? contaDestino = null;
+
+                if (lancamentoDto.CartaoId != null)
+                {
+                    cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                }
+
+                if (lancamentoDto.ContaDestinoId != null) //transferencia
+                {
+                    contaDestino = await _contaRepository.GetContaById((int)lancamentoDto.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!");
+                }
+
+                Categoria catFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
+                bool lancamentoFatura = categoria.Equals(catFatura);
+
+                if (lancamentoFatura && lancamento.Observacao == lancamentoDto.Observacao)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Não é possível alterar o lançamento de fatura!";
+                    response.StatusCode = 401;
+                    return response;
+                }
+
+                AjustarSaldoUpdate(lancamento, lancamentoDto, conta, contaDestino);
+
+                Lancamento lancamentoUpdate = _mapper.Map(lancamentoDto, lancamento);
+                _repository.Update(lancamentoUpdate);
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível atualizar no banco!");
+
+                response.Sucesso = true;
+                response.Entidade = _mapper.Map<ResponseLancamentoDto>(lancamentoUpdate);
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
         }
 
         public async Task<ResponseDto> DeleteAsync(int id, int usuarioId)
@@ -268,6 +327,25 @@ namespace MoneyAPI.Services
                     AtualizarSaldo(lancamentoInsert.Valor, lancamentoInsert.PreLancamento, conta, contaDestino);
                 else
                     await AtualizarCartao(lancamentoInsert, cartao!, usuarioId, false);
+            }
+        }
+
+        private void AjustarSaldoUpdate(Lancamento antigo, RequestLancamentoDto novo, Conta conta, Conta? contaDestino) //trigger update e pr_AlterarTransf no banco antigo
+        {
+            decimal antigoEfetivo = antigo.PreLancamento ? 0 : antigo.Valor;
+            decimal novoEfetivo = novo.PreLancamento ? 0 : novo.Valor;
+            decimal ajuste = novoEfetivo - antigoEfetivo;
+
+            if (ajuste == 0)
+                return;
+
+            conta.Saldo += ajuste;
+            _contaRepository.Update(conta);
+
+            if (contaDestino != null)
+            {
+                contaDestino.Saldo += ajuste * -1;
+                _contaRepository.Update(contaDestino);
             }
         }
 
