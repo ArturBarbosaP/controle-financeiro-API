@@ -130,7 +130,7 @@ namespace MoneyAPI.Services
                     return response;
                 }
 
-                AjustarSaldoUpdate(lancamento, lancamentoDto, conta, contaDestino);
+                AtualizarSaldo(lancamento, lancamentoDto, conta, contaDestino);
 
                 Lancamento lancamentoUpdate = _mapper.Map(lancamentoDto, lancamento);
                 _repository.Update(lancamentoUpdate);
@@ -330,7 +330,7 @@ namespace MoneyAPI.Services
             }
         }
 
-        private void AjustarSaldoUpdate(Lancamento antigo, RequestLancamentoDto novo, Conta conta, Conta? contaDestino) //trigger update e pr_AlterarTransf no banco antigo
+        private void AtualizarSaldo(Lancamento antigo, RequestLancamentoDto novo, Conta conta, Conta? contaDestino) //trigger update e pr_AlterarTransf no banco antigo
         {
             decimal antigoEfetivo = antigo.PreLancamento ? 0 : antigo.Valor;
             decimal novoEfetivo = novo.PreLancamento ? 0 : novo.Valor;
@@ -339,14 +339,18 @@ namespace MoneyAPI.Services
             if (ajuste == 0)
                 return;
 
-            conta.Saldo += ajuste;
-            _contaRepository.Update(conta);
-
             if (contaDestino != null)
             {
-                contaDestino.Saldo += ajuste * -1;
+                conta.Saldo -= ajuste;
+                contaDestino.Saldo += ajuste;
                 _contaRepository.Update(contaDestino);
             }
+            else
+            {
+                conta.Saldo += ajuste;
+            }  
+            
+            _contaRepository.Update(conta);
         }
 
         private void AtualizarSaldo(decimal valor, bool preLancamento, Conta conta, Conta? contaDestino) //pr_AlterarSaldo no banco antigo
@@ -354,12 +358,15 @@ namespace MoneyAPI.Services
             if (preLancamento) //atualiza saldo apenas se o lancamento for de hoje ou mais antigo
                 return;
 
-            conta.Saldo += valor;
-
             if (contaDestino != null) //colocando saldo na conta destino se o lancamento for de transferencia
             {
-                contaDestino.Saldo += valor * -1;
+                conta.Saldo -= valor;
+                contaDestino.Saldo += valor;
                 _contaRepository.Update(contaDestino);
+            }
+            else
+            {
+                conta.Saldo += valor;
             }
 
             _contaRepository.Update(conta);
@@ -453,7 +460,7 @@ namespace MoneyAPI.Services
         {
             CalcularPreLancamento(lancamentoDto);
 
-            lancamentoDto.Valor = lancamentoDto.Tipo == "Receita" ? lancamentoDto.Valor : lancamentoDto.Valor * -1;
+            lancamentoDto.Valor = lancamentoDto.Tipo == "Despesa" ? lancamentoDto.Valor * -1 : lancamentoDto.Valor;
 
             lancamentoDto.Parcelas = lancamentoDto.Parcelas <= 1 ? 0 : lancamentoDto.Parcelas;
 
