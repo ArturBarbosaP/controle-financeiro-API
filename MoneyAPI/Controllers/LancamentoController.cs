@@ -55,6 +55,25 @@ namespace MoneyAPI.Controllers
             return DefaultResponse(response);
         }
 
+        [SwaggerOperation(Summary = "Atualizar lançamentos fixos", Description = "Atualiza os lançamentos fixos baseado em um lançamento passando seu ID")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [HttpPut("{id}/[action]")]
+        public async Task<IActionResult> Fixo(int id, [FromBody] RequestLancamentoDto lancamentoDto)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseDto response = await _service.UpdateFixoAsync(id, lancamentoDto, UsuarioId.Value);
+
+            return DefaultResponse(response);
+        }
+
         [SwaggerOperation(Summary = "Deletar lançamento", Description = "Deleta um lançamento passando seu ID")]
         [ProducesResponseType(200)]
         [ProducesResponseType(401)]

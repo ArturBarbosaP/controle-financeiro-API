@@ -75,7 +75,8 @@ namespace MoneyAPI.Repositories
                     && l.CategoriaId == lancamento.CategoriaId
                     && l.Descricao == lancamento.Descricao
                     && l.Tipo == lancamento.Tipo
-                    && l.Data >= lancamento.Data)
+                    && l.Data >= lancamento.Data
+                    && l.Fixo)
                 .ToListAsync();
         }
     }

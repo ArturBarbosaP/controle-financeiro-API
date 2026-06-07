@@ -161,6 +161,93 @@ namespace MoneyAPI.Services
             return response;
         }
 
+        public async Task<ResponseDto> UpdateFixoAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId) //pr_AlterarFixo no banco antigo
+        {
+            ResponseDto response = new();
+
+            try
+            {
+                NormalizarLancamento(lancamentoDto);
+
+                Lancamento lancamento = await _repository.GetLancamentoById(id, usuarioId) ?? throw new NullReferenceException("O lançamento não existe!");
+
+                if (!lancamento.Fixo)
+                {
+                    response.Sucesso = false;
+                    response.Erro = string.Concat("O lançamento não é Fixo!", lancamentoDto.Fixo ? " Insira um novo lançamento para tornar este lançamento Fixo!" : "");
+                    response.StatusCode = 400;
+                    return response;
+                }
+
+                Conta conta = await _contaRepository.GetContaById(lancamentoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
+                Cartao? cartao = null;
+                Conta? contaDestino = null;
+
+                if (lancamentoDto.CartaoId != null)
+                {
+                    cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                }
+
+                if (lancamentoDto.ContaDestinoId != null) //transferencia
+                {
+                    contaDestino = await _contaRepository.GetContaById((int)lancamentoDto.ContaDestinoId, usuarioId) ?? throw new NullReferenceException("Conta destino não encontrada!");
+                }
+
+                List<Lancamento> lancamentos = await _repository.GetLancamentosFixosByLancamento(lancamento, usuarioId);
+
+                if (lancamentos.Count == 0)
+                    throw new NullReferenceException("O lançamento não existe!");
+
+                DateOnly dataOriginal = lancamentoDto.Data;
+                bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
+                int mes = lancamentoDto.Data.Month;
+
+                foreach (Lancamento l in lancamentos)
+                {
+                    DateOnly novaData = dataOriginal.AddMonths(mes);
+
+                    int dia = ultimoDiaMes
+                        ? DateTime.DaysInMonth(novaData.Year, novaData.Month)
+                        : Math.Min(dataOriginal.Day, DateTime.DaysInMonth(novaData.Year, novaData.Month)); //caso o dia do mes selecionado for maior que o ultimo dia de algum mes
+
+                    lancamentoDto.Data = new DateOnly(novaData.Year, novaData.Month, dia);
+
+                    CalcularPreLancamento(lancamentoDto);
+
+                    if (lancamentoDto.CartaoId == null && lancamento.CartaoId == null)
+                        AtualizarSaldo(l, lancamentoDto, conta, contaDestino);
+                    else
+                        await AtualizarCartao(l, lancamentoDto, cartao!, conta, usuarioId);
+
+                    Lancamento lancamentoUpdate = _mapper.Map(lancamentoDto, l);
+                    _repository.Update(lancamentoUpdate);
+
+                    mes++;
+                }
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível atualizar no banco!");
+
+                response.Sucesso = true;
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
+        }
+
         public async Task<ResponseDto> DeleteAsync(int id, int usuarioId)
         {
             ResponseDto response = new();
