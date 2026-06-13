@@ -10,5 +10,6 @@ namespace MoneyAPI.Services.Interfaces
         Task<ResponseDto> CreateAsync(RequestCartaoDto cartaoDto, int usuarioId);
         Task<ResponseDto> UpdateAsync(int id, RequestCartaoDto cartaoDto, int usuarioId);
         Task<ResponseDto> DeleteAsync(int id, int usuarioId);
+        Task ResetarFatura();
     }
 }

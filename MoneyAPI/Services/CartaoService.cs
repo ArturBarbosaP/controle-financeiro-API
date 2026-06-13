@@ -163,5 +163,28 @@ namespace MoneyAPI.Services
         {
             return _mapper.Map<IEnumerable<ResponseCartaoDto>>(await _repository.GetCartoes(usuarioId));
         }
+
+        public async Task ResetarFatura() //pr_ResetarFatura no banco antigo
+        {
+            List<Cartao> cartoes = await _repository.GetCartoesFechados();
+
+            foreach (Cartao cartao in cartoes)
+            {
+                DateOnly dataInicio = cartao.DataFechamento.AddMonths(-1).AddDays(1);
+                decimal valorParcelado = await _lancamentoRepository.GetLancamentosParceladosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
+                decimal valorFatura = await _lancamentoRepository.GetLancamentosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
+
+                cartao.DataFechamento = cartao.DataFechamento.AddMonths(1);
+                cartao.DataVencimento = cartao.DataVencimento.AddMonths(1);
+
+                cartao.ValorParcelado += valorParcelado;
+                cartao.LimiteDisponivel = cartao.Limite + valorFatura - cartao.ValorParcelado;
+
+                _repository.Update(cartao);
+            }
+
+            if (!await _repository.SaveChanges())
+                throw new Exception("Não foi possível alterar no banco no banco!");
+        }
     }
 }

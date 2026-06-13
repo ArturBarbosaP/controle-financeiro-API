@@ -39,5 +39,12 @@ namespace MoneyAPI.Repositories
                 .Where(ca => ca.Nome == nome)
                 .FirstOrDefaultAsync();
         }
+
+        public async Task<List<Cartao>> GetCartoesFechados()
+        {
+            return await _context.Cartoes
+                .Where(c => DateOnly.FromDateTime(DateTime.Now) > c.DataFechamento)
+                .ToListAsync();
+        }
     }
 }

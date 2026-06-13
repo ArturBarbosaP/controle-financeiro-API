@@ -357,6 +357,25 @@ namespace MoneyAPI.Services
             return _mapper.Map<IEnumerable<ResponseLancamentoDto>>(await _repository.GetLancamentosMensal(usuarioId, mes, ano));
         }
 
+        public async Task AlterarPreLancamentoAsync() //pr_AlterarPreLancamento no banco antigo
+        {
+            List<Lancamento> lancamentos = await _repository.GetLancamentosPreLancamentoOld();
+
+            if (lancamentos.Count == 0)
+                return;
+
+            foreach (Lancamento l in lancamentos)
+            {
+                l.PreLancamento = false;
+                _repository.Update(l);
+
+                AtualizarSaldo(l.Valor, false, l.Conta);
+            }
+
+            if (!await _repository.SaveChanges())
+                throw new Exception("Não foi possível alterar no banco no banco!");
+        }
+
         #region Triggers e procedures do legado
 
         private async Task InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino, Cartao? cartao) //pr_AdicionarParcelado no banco antigo
@@ -551,7 +570,7 @@ namespace MoneyAPI.Services
             bool novoTemCartao = novo.CartaoId != null;
 
             if (antigoTemCartao)
-                antigoCartao = await _cartaoRepository.GetCartaoById((int)antigo.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                antigoCartao = await _cartaoRepository.GetCartaoById((int)antigo.CartaoId!, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
 
             if (!antigoTemCartao && novoTemCartao) //não tinha cartão, agora tem
             {

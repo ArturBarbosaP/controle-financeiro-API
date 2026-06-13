@@ -3,6 +3,7 @@ using MoneyAPI.Data;
 using MoneyAPI.Helpers;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
+using System.Text.RegularExpressions;
 
 namespace MoneyAPI.Repositories
 {
@@ -44,6 +45,15 @@ namespace MoneyAPI.Repositories
 
         }
 
+        /// <summary>
+        /// Uma fatura do cartão (indicado pelo nome na Descrição) na data de fechamento do cartão
+        /// </summary>
+        /// <param name="descricao"></param>
+        /// <param name="data"></param>
+        /// <param name="contaId"></param>
+        /// <param name="categoriaFaturaId"></param>
+        /// <param name="usuarioId"></param>
+        /// <returns>Um lançamento da fatura do cartão</returns>
         public async Task<Lancamento> GetLancamentoFaturaCartao(string descricao, DateOnly data, int contaId, int categoriaFaturaId, int usuarioId)
         {
             return await _context.Lancamentos
@@ -55,6 +65,14 @@ namespace MoneyAPI.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        /// <summary>
+        /// Todas as faturas do cartão (indicado pelo nome na Descrição)
+        /// </summary>
+        /// <param name="descricao"></param>
+        /// <param name="contaId"></param>
+        /// <param name="categoriaFaturaId"></param>
+        /// <param name="usuarioId"></param>
+        /// <returns>Lista de lançamentos das faturas existentes para esse cartão</returns>
         public async Task<IEnumerable<Lancamento>> GetLancamentosFaturasCartao(string descricao, int contaId, int categoriaFaturaId, int usuarioId)
         {
             return await _context.Lancamentos
@@ -78,6 +96,48 @@ namespace MoneyAPI.Repositories
                     && l.Data >= lancamento.Data
                     && l.Fixo)
                 .ToListAsync();
+        }
+
+        public async Task<List<Lancamento>> GetLancamentosPreLancamentoOld()
+        {
+            return await _context.Lancamentos
+                .Include(l => l.Conta)
+                .Where(l => l.PreLancamento && l.Data <= DateOnly.FromDateTime(DateTime.Now))
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Todos os lançamentos (menos os parcelados) na fatura do cartão
+        /// </summary>
+        /// <param name="cartaoId"></param>
+        /// <param name="dataInicio"></param>
+        /// <param name="dataFim"></param>
+        /// <returns>A soma de todos os valores dos lançamentos na fatura do cartão</returns>
+        public Task<decimal> GetLancamentosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
+        {
+            return _context.Lancamentos
+                .Where(l => l.CartaoId == cartaoId
+                    && !Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
+                    && l.Data >= dataInicio
+                    && l.Data <= dataFim)
+                .SumAsync(l => l.Valor);
+        }
+
+        /// <summary>
+        /// Todos os lançamentos parcelados na fatura do cartão
+        /// </summary>
+        /// <param name="cartaoId"></param>
+        /// <param name="dataInicio"></param>
+        /// <param name="dataFim"></param>
+        /// <returns>A soma de todos os valores dos lançamentos parcelados na fatura do cartão</returns>
+        public Task<decimal> GetLancamentosParceladosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
+        {
+            return _context.Lancamentos
+                .Where(l => l.CartaoId == cartaoId
+                    && Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
+                    && l.Data >= dataInicio
+                    && l.Data <= dataFim)
+                .SumAsync(l => l.Valor);
         }
     }
 }

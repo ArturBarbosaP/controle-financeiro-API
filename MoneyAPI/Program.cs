@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MoneyAPI.Data;
+using MoneyAPI.Jobs;
 using Quartz;
 using SwaggerThemes;
 
@@ -53,12 +54,28 @@ builder.Services.AddCors(options =>
 });
 
 // Quartz
-/*builder.Services.AddQuartz(q =>
+builder.Services.AddQuartz(q =>
 {
-    TODO: Pre_lancamento
+    JobKey jobKey = new("AlterarPreLancamentoAndFaturaJob");
+
+    q.AddJob<AlterarPreLancamentoAndFaturaJob>(opts => opts.WithIdentity(jobKey));
+
+    /*q.AddTrigger(opt =>
+        opt.ForJob(jobKey)
+        .WithIdentity("AlterarPreLancamentoAndFaturaJob-trigger")
+        .WithCronSchedule("0 0 8 * * ?") //todod dia as 8 horas
+    );*/
+
+    q.AddTrigger(opt =>
+    opt.ForJob(jobKey)
+    .WithIdentity("teste")
+    .WithSimpleSchedule(x => x
+        .WithIntervalInSeconds(300)
+        .RepeatForever()));
+
 });
 
-builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);*/
+builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);
 
 //Swagger
 builder.Services.AddSwaggerGen(c =>
