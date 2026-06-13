@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Cartao;
 using MoneyAPI.Models.Entities;
@@ -14,14 +15,16 @@ namespace MoneyAPI.Services
         private readonly ICategoriaRepository _categoriaRepository;
         private readonly ILancamentoRepository _lancamentoRepository;
         private readonly IMapper _mapper;
+        private readonly Notification _notification;
 
-        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper)
+        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper, Notification notification)
         {
             _repository = repository;
             _contaRepository = contaRepository;
             _categoriaRepository = categoriaRepository;
             _lancamentoRepository = lancamentoRepository;
             _mapper = mapper;
+            _notification = notification;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestCartaoDto cartaoDto, int usuarioId)
@@ -228,6 +231,8 @@ namespace MoneyAPI.Services
                 cartao.LimiteDisponivel = cartao.Limite + valorFatura - cartao.ValorParcelado;
 
                 _repository.Update(cartao);
+
+                _notification.Insert(cartao.Conta.UsuarioId, $"\n{cartao.Nome} fechando hoje");
             }
 
             if (!await _repository.SaveChanges())

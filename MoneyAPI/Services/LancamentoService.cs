@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using MoneyAPI.Data;
 using MoneyAPI.Models.DTOs;
 using MoneyAPI.Models.DTOs.Lancamento;
 using MoneyAPI.Models.Entities;
@@ -14,14 +15,16 @@ namespace MoneyAPI.Services
         private readonly ICategoriaRepository _categoriaRepository;
         private readonly ICartaoRepository _cartaoRepository;
         private readonly IMapper _mapper;
+        private readonly Notification _notification;
 
-        public LancamentoService(ILancamentoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ICartaoRepository cartaoRepository, IMapper mapper)
+        public LancamentoService(ILancamentoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ICartaoRepository cartaoRepository, IMapper mapper, Notification notification)
         {
             _repository = repository;
             _contaRepository = contaRepository;
             _categoriaRepository = categoriaRepository;
             _cartaoRepository = cartaoRepository;
             _mapper = mapper;
+            _notification = notification;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId)
@@ -364,12 +367,20 @@ namespace MoneyAPI.Services
             if (lancamentos.Count == 0)
                 return;
 
-            foreach (Lancamento l in lancamentos)
+            foreach (var grupo in lancamentos.GroupBy(u => u.UsuarioId))
             {
-                l.PreLancamento = false;
-                _repository.Update(l);
+                _notification.Insert(grupo.Key, $"{grupo.Count()} {(grupo.Count() == 1 ? "lançamento foi efetivado" : "lançamentos foram efetivados")} hoje\n");
 
-                AtualizarSaldo(l.Valor, false, l.Conta);
+                foreach (Lancamento l in grupo)
+                {
+                    l.PreLancamento = false;
+                    _repository.Update(l);
+
+                    if (!l.CartaoId.HasValue)
+                        AtualizarSaldo(l.Valor, false, l.Conta);
+
+                    _notification.Insert(grupo.Key, $"\t• {l.Descricao} - {Math.Abs(l.Valor).ToString("C2")} - {l.Tipo}\n");
+                }
             }
 
             if (!await _repository.SaveChanges())

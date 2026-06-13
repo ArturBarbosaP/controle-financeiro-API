@@ -135,5 +135,18 @@ namespace MoneyAPI.Controllers
 
             return Ok(lancamento);
         }
+
+        [SwaggerOperation(Summary = "Executar AlterarPreLancamentoAsync", Description = "Executa o job de alterar pré lançamentos")]
+        [ProducesResponseType(200)]
+        [HttpGet("[action]")]
+        public async Task<IActionResult> ExecAlterarPreLancamentoAsync()
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            await _service.AlterarPreLancamentoAsync();
+
+            return Ok();
+        }
     }
 }

@@ -43,6 +43,7 @@ namespace MoneyAPI.Repositories
         public async Task<List<Cartao>> GetCartoesFechados()
         {
             return await _context.Cartoes
+                .Include(c => c.Conta)
                 .Where(c => DateOnly.FromDateTime(DateTime.Now) > c.DataFechamento)
                 .ToListAsync();
         }

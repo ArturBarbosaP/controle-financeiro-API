@@ -120,5 +120,18 @@ namespace MoneyAPI.Controllers
 
             return DefaultResponse(response);
         }
+
+        [SwaggerOperation(Summary = "Executar ResetarFatura", Description = "Executa o job de resetar fatura")]
+        [ProducesResponseType(200)]
+        [HttpGet("[action]")]
+        public async Task<IActionResult> ExecResetarFatura()
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            await _service.ResetarFatura();
+
+            return Ok();
+        }
     }
 }

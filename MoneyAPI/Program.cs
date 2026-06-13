@@ -30,6 +30,7 @@ builder.Services.Scan(scan =>
 });
 
 builder.Services.AddSingleton<Session>();
+builder.Services.AddSingleton<Notification>();
 
 //BD Entity Framework
 builder.Services.AddDbContext<ApplicationContext>(options =>
