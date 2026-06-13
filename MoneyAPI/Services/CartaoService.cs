@@ -154,6 +154,53 @@ namespace MoneyAPI.Services
             return response;
         }
 
+        public async Task<ResponseDto> PagarFatura(int id, RequestCartaoDto cartaoDto, int usuarioId)
+        {
+            ResponseDto response = new();
+
+            try
+            {
+                Cartao cartao = await _repository.GetCartaoById(id, usuarioId) ?? throw new NullReferenceException("O cartão não existe!");
+                Categoria categoriaFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
+                Lancamento fatura = await _lancamentoRepository.GetLancamentoFaturaCartao(cartao.Nome, cartao.DataVencimento, cartao.ContaId, categoriaFatura.Id, usuarioId) ?? throw new NullReferenceException("Não existe nenhuma fatura em aberto para esse cartão!");
+
+                if (!fatura.PreLancamento)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "A fatura já foi paga!";
+                    response.StatusCode = 400;
+                }
+
+                fatura.PreLancamento = false;
+                fatura.Observacao = $"{fatura.Observacao} - Data de pagamento: {DateTime.Now.ToString("dd/MM/yyyy")}";
+
+                _lancamentoRepository.Update(fatura);
+
+                cartao.Conta.Saldo += fatura.Valor;
+
+                _contaRepository.Update(cartao.Conta);
+
+                if (!await _repository.SaveChanges())
+                    throw new Exception("Não foi possível realizar o pagamento no banco!");
+
+                response.Sucesso = true;
+            }
+            catch (NullReferenceException ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message;
+                response.StatusCode = 404;
+            }
+            catch (Exception ex)
+            {
+                response.Sucesso = false;
+                response.Erro = ex.Message + "\n" + ex.InnerException;
+                response.StatusCode = 500;
+            }
+
+            return response;
+        }
+
         public async Task<ResponseCartaoDto?> GetCartaoByIdAsync(int id, int usuarioId)
         {
             return _mapper.Map<ResponseCartaoDto>(await _repository.GetCartaoById(id, usuarioId));

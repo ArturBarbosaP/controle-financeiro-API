@@ -60,19 +60,11 @@ builder.Services.AddQuartz(q =>
 
     q.AddJob<AlterarPreLancamentoAndFaturaJob>(opts => opts.WithIdentity(jobKey));
 
-    /*q.AddTrigger(opt =>
+    q.AddTrigger(opt =>
         opt.ForJob(jobKey)
         .WithIdentity("AlterarPreLancamentoAndFaturaJob-trigger")
         .WithCronSchedule("0 0 8 * * ?") //todod dia as 8 horas
-    );*/
-
-    q.AddTrigger(opt =>
-    opt.ForJob(jobKey)
-    .WithIdentity("teste")
-    .WithSimpleSchedule(x => x
-        .WithIntervalInSeconds(300)
-        .RepeatForever()));
-
+    );
 });
 
 builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);

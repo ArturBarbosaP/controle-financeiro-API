@@ -101,5 +101,24 @@ namespace MoneyAPI.Controllers
 
             return Ok(cartao);
         }
+
+        [SwaggerOperation(Summary = "Paga a fatura em aberto do cartão", Description = "Paga a fatura em aberto do cartão passando seu ID")]
+        [ProducesResponseType(200)]
+        [ProducesResponseType(400)]
+        [ProducesResponseType(401)]
+        [ProducesResponseType(404)]
+        [HttpPut("{id}/[action]")]
+        public async Task<IActionResult> PagarFatura(int id, [FromBody] RequestCartaoDto cartaoDto)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            ResponseDto response = await _service.PagarFatura(id, cartaoDto, UsuarioId.Value);
+
+            return DefaultResponse(response);
+        }
     }
 }
