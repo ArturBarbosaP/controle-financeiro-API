@@ -129,6 +129,9 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
+            if (!IsAdmin)
+                return Unauthorized();
+
             await _service.ResetarFatura();
 
             return Ok();

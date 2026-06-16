@@ -21,5 +21,11 @@ namespace MoneyAPI.Data
 
             modelBuilder.ApplyConfigurationsFromAssembly(GetType().Assembly);
         }
+
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT") == "Development")
+                optionsBuilder.EnableSensitiveDataLogging();
+        }
     }
 }

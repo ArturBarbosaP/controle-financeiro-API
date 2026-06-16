@@ -360,33 +360,6 @@ namespace MoneyAPI.Services
             return _mapper.Map<IEnumerable<ResponseLancamentoDto>>(await _repository.GetLancamentosMensal(usuarioId, mes, ano));
         }
 
-        public async Task AlterarPreLancamentoAsync() //pr_AlterarPreLancamento no banco antigo
-        {
-            List<Lancamento> lancamentos = await _repository.GetLancamentosPreLancamentoOld();
-
-            if (lancamentos.Count == 0)
-                return;
-
-            foreach (var grupo in lancamentos.GroupBy(u => u.UsuarioId))
-            {
-                _notification.Insert(grupo.Key, $"{grupo.Count()} {(grupo.Count() == 1 ? "lançamento foi efetivado" : "lançamentos foram efetivados")} hoje\n");
-
-                foreach (Lancamento l in grupo)
-                {
-                    l.PreLancamento = false;
-                    _repository.Update(l);
-
-                    if (!l.CartaoId.HasValue)
-                        AtualizarSaldo(l.Valor, false, l.Conta);
-
-                    _notification.Insert(grupo.Key, $"\t• {l.Descricao} - {Math.Abs(l.Valor).ToString("C2")} - {l.Tipo}\n");
-                }
-            }
-
-            if (!await _repository.SaveChanges())
-                throw new Exception("Não foi possível alterar no banco no banco!");
-        }
-
         #region Triggers e procedures do legado
 
         private async Task InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino, Cartao? cartao) //pr_AdicionarParcelado no banco antigo
@@ -598,6 +571,33 @@ namespace MoneyAPI.Services
                 await AtualizarCartao(novo, novoCartao, usuarioId, false);
                 await AtualizarCartao(antigo, antigoCartao!, usuarioId, false, true);
             }
+        }
+
+        public async Task AlterarPreLancamentoAsync() //pr_AlterarPreLancamento no banco antigo
+        {
+            List<Lancamento> lancamentos = await _repository.GetLancamentosPreLancamentoOld();
+
+            if (lancamentos.Count == 0)
+                return;
+
+            foreach (var grupo in lancamentos.GroupBy(u => u.UsuarioId))
+            {
+                _notification.Insert(grupo.Key, $"{grupo.Count()} {(grupo.Count() == 1 ? "lançamento foi efetivado" : "lançamentos foram efetivados")} hoje\n");
+
+                foreach (Lancamento l in grupo)
+                {
+                    l.PreLancamento = false;
+                    _repository.Update(l);
+
+                    if (!l.CartaoId.HasValue)
+                        AtualizarSaldo(l.Valor, false, l.Conta);
+
+                    _notification.Insert(grupo.Key, $"\t• {l.Descricao} - {Math.Abs(l.Valor).ToString("C2")} - {l.Tipo}\n");
+                }
+            }
+
+            if (!await _repository.SaveChanges())
+                throw new Exception("Não foi possível alterar no banco no banco!");
         }
 
         #endregion

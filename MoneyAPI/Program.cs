@@ -1,11 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
 using MoneyAPI.Data;
+using MoneyAPI.Helpers;
 using MoneyAPI.Jobs;
 using Quartz;
+using Serilog;
 using SwaggerThemes;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//Serilog
+Log.Logger = new LoggerConfiguration()
+    .ReadFrom.Configuration(builder.Configuration)
+    .Enrich.FromLogContext()
+    .Enrich.WithMachineName()
+    .Enrich.WithThreadId()
+    .CreateLogger();
+
+builder.Host.UseSerilog();
 
 // Add services to the container.
 builder.Services.AddControllers()
@@ -64,7 +76,7 @@ builder.Services.AddQuartz(q =>
     q.AddTrigger(opt =>
         opt.ForJob(jobKey)
         .WithIdentity("AlterarPreLancamentoAndFaturaJob-trigger")
-        .WithCronSchedule("0 0 8 * * ?") //todod dia as 8 horas
+        .WithCronSchedule("0 0 7 * * ?") //todod dia as 7 horas
     );
 });
 
@@ -112,8 +124,25 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+//adicionando usuarioId e IP no log
+app.UseSerilogRequestLogging(opts =>
+{
+    opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        var token = httpContext.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
+        var session = httpContext.RequestServices.GetRequiredService<Session>();
+        var usuarioId = token != null ? session.ObterUsuarioId(token) : null;
+
+        diagnosticContext.Set("UsuarioId", usuarioId ?? 0);
+        diagnosticContext.Set("IP", httpContext.Connection.RemoteIpAddress);
+    };
+});
+
+app.UseMiddleware<ExceptionMiddleware>();
+
 app.UseSwagger();
 
+//tema escuro pro swagger
 app.UseSwaggerUI(Theme.UniversalDark, null, c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Money API v1");
