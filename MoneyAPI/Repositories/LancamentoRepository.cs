@@ -22,6 +22,7 @@ namespace MoneyAPI.Repositories
                 .Include(x => x.Conta)
                 .Include(x => x.Categoria)
                 .Include(x => x.Cartao)
+                .Include(x => x.ContaDestino)
                 .Where(x => x.UsuarioId == usuarioId)
                 .Where(x => x.Id == id)
                 .FirstOrDefaultAsync();
@@ -36,6 +37,7 @@ namespace MoneyAPI.Repositories
                 .Include(x => x.Conta)
                 .Include(x => x.Categoria)
                 .Include(x => x.Cartao)
+                .Include(x => x.ContaDestino)
                 .Where(x => x.UsuarioId == usuarioId)
                 .Where(x => x.Data >= dataInicio && x.Data <= dataFim)
                 .ToListAsync()

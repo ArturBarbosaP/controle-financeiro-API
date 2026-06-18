@@ -16,8 +16,9 @@ namespace MoneyAPI.Services
         private readonly ILancamentoRepository _lancamentoRepository;
         private readonly IMapper _mapper;
         private readonly Notification _notification;
+        private readonly ILogger<CartaoService> _logger;
 
-        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper, Notification notification)
+        public CartaoService(ICartaoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper, Notification notification, ILogger<CartaoService> logger)
         {
             _repository = repository;
             _contaRepository = contaRepository;
@@ -25,6 +26,7 @@ namespace MoneyAPI.Services
             _lancamentoRepository = lancamentoRepository;
             _mapper = mapper;
             _notification = notification;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestCartaoDto cartaoDto, int usuarioId)
@@ -55,12 +57,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro NullReferenceException no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -76,6 +80,7 @@ namespace MoneyAPI.Services
             try
             {
                 Cartao cartao = await _repository.GetCartaoById(id, usuarioId) ?? throw new NullReferenceException("O cartão não existe!");
+                Conta conta = await _contaRepository.GetContaById(cartaoDto.ContaId, usuarioId) ?? throw new NullReferenceException("Conta não encontrada!");
 
                 bool alteracaoNome = cartaoDto.Nome != cartao.Nome;
 
@@ -112,12 +117,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -143,12 +150,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -172,6 +181,7 @@ namespace MoneyAPI.Services
                     response.Sucesso = false;
                     response.Erro = "A fatura já foi paga!";
                     response.StatusCode = 400;
+                    return response;
                 }
 
                 fatura.PreLancamento = false;
@@ -190,12 +200,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.PagarFatura), id, cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.PagarFatura), id, cartaoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -217,6 +229,9 @@ namespace MoneyAPI.Services
         public async Task ResetarFatura() //pr_ResetarFatura no banco antigo
         {
             List<Cartao> cartoes = await _repository.GetCartoesFechados();
+
+            if (cartoes.Count == 0)
+                return;
 
             foreach (Cartao cartao in cartoes)
             {

@@ -11,11 +11,13 @@ namespace MoneyAPI.Services
     public class AuthService : IAuthService
     {
         private readonly IUsuarioRepository _repository;
+        private readonly ILogger<AuthService> _logger;
         private readonly Session _session;
 
-        public AuthService(IUsuarioRepository repository, Session session)
+        public AuthService(IUsuarioRepository repository, ILogger<AuthService> logger, Session session)
         {
             _repository = repository;
+            _logger = logger;
             _session = session;
         }
 
@@ -47,6 +49,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade}", nameof(this.LoginAsync), loginDTO);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -66,6 +69,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | Token: {Entidade}", nameof(this.LogoutAsync), token);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -95,6 +99,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | Token: {Entidade}", nameof(this.VerifyAsync), token);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;

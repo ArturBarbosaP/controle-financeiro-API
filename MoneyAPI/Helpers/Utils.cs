@@ -10,13 +10,15 @@ namespace MoneyAPI.Helpers
             {
                 Nome = "Pagamento de fatura",
                 Tipo = "Despesa",
-                Cor = "#BCBCBC"
+                Cor = "#BCBCBC",
+                Padrao = true
             },
             new Categoria
             {
                 Nome = "Transferência",
                 Tipo = "Transf.",
-                Cor = "#BCBCBC"
+                Cor = "#BCBCBC",
+                Padrao = true
             }
         ];
 

@@ -5,7 +5,6 @@ using MoneyAPI.Models.DTOs.Usuario;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using MoneyAPI.Services.Interfaces;
-using System.Threading.Tasks;
 
 namespace MoneyAPI.Services
 {
@@ -15,13 +14,15 @@ namespace MoneyAPI.Services
         private readonly ICategoriaRepository _categoryRepository;
         private readonly IAuthService _authService;
         private readonly IMapper _mapper;
+        private readonly ILogger<UsuarioService> _logger;
 
-        public UsuarioService(IUsuarioRepository repository, ICategoriaRepository categoriaRepository, IAuthService authService, IMapper mapper)
+        public UsuarioService(IUsuarioRepository repository, ICategoriaRepository categoriaRepository, IAuthService authService, IMapper mapper, ILogger<UsuarioService> logger)
         {
             _repository = repository;
             _categoryRepository = categoriaRepository;
             _authService = authService;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestAddUsuarioDto usuarioDto)
@@ -47,6 +48,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade}", nameof(this.CreateAsync), usuarioDto);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -74,6 +76,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade}", nameof(this.UpdateAsync), id, usuarioDto);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -81,6 +84,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade}", nameof(this.UpdateAsync), id, usuarioDto);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -116,6 +120,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade}", nameof(this.UpdatePasswordAsync), id, passwordDto);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -123,6 +128,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade}", nameof(this.UpdatePasswordAsync), id, passwordDto);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -164,6 +170,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID}", nameof(this.DeleteAsync), id);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -171,6 +178,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID}", nameof(this.DeleteAsync), id);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -194,12 +202,20 @@ namespace MoneyAPI.Services
             return _mapper.Map<IEnumerable<ResponseUsuarioDto>>(await _repository.GetUsuarios());
         }
 
+        #region Auxiliares
+
         private void AddCategoriasPadrao(int usuarioId)
         {
-            foreach (Categoria categoria in Utils.categoriasPadrões)
+            foreach (Categoria cat in Utils.categoriasPadrões)
             {
-                categoria.UsuarioId = usuarioId;
-                _categoryRepository.Add(categoria);
+                _categoryRepository.Add(new Categoria
+                {
+                    Nome = cat.Nome,
+                    Tipo = cat.Tipo,
+                    Cor = cat.Cor,
+                    Padrao = cat.Padrao,
+                    UsuarioId = usuarioId
+                });
             }
         }
 
@@ -210,5 +226,7 @@ namespace MoneyAPI.Services
                 _categoryRepository.Delete(categoria);
             }
         }
+
+        #endregion
     }
 }

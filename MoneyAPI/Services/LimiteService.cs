@@ -12,12 +12,14 @@ namespace MoneyAPI.Services
         private readonly ILimiteRepository _repository;
         private readonly ICategoriaRepository _categoriaRepository;
         private readonly IMapper _mapper;
+        private readonly ILogger<LimiteService> _logger;
 
-        public LimiteService(ILimiteRepository repository, ICategoriaRepository categoriaRepository, IMapper mapper)
+        public LimiteService(ILimiteRepository repository, ICategoriaRepository categoriaRepository, IMapper mapper, ILogger<LimiteService> logger)
         {
             _repository = repository;
             _categoriaRepository = categoriaRepository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestLimiteDto limiteDto, int usuarioId)
@@ -39,12 +41,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), limiteDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), limiteDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -60,6 +64,7 @@ namespace MoneyAPI.Services
             try
             {
                 Limite limite = await _repository.GetLimiteById(id, usuarioId) ?? throw new NullReferenceException("O limite não existe!");
+                Categoria categoria = await _categoriaRepository.GetCategoriaById(limiteDto.CategoriaId, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
 
                 Limite limiteUpdate = _mapper.Map(limiteDto, limite);
                 _repository.Update(limiteUpdate);
@@ -72,12 +77,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, limiteDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, limiteDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -103,6 +110,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -110,6 +118,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;

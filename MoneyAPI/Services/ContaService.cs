@@ -11,11 +11,13 @@ namespace MoneyAPI.Services
     {
         private readonly IContaRepository _repository;
         private readonly IMapper _mapper;
+        private readonly ILogger<ContaService> _logger;
 
-        public ContaService(IContaRepository repository, IMapper mapper)
+        public ContaService(IContaRepository repository, IMapper mapper, ILogger<ContaService> logger)
         {
             _repository = repository;
             _mapper = mapper;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestContaDto contaDto, int usuarioId)
@@ -45,6 +47,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), contaDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -80,6 +83,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, contaDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -87,6 +91,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, contaDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -112,6 +117,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -119,6 +125,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;

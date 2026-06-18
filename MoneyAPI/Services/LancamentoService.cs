@@ -16,8 +16,9 @@ namespace MoneyAPI.Services
         private readonly ICartaoRepository _cartaoRepository;
         private readonly IMapper _mapper;
         private readonly Notification _notification;
+        private readonly ILogger<LancamentoService> _logger;
 
-        public LancamentoService(ILancamentoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ICartaoRepository cartaoRepository, IMapper mapper, Notification notification)
+        public LancamentoService(ILancamentoRepository repository, IContaRepository contaRepository, ICategoriaRepository categoriaRepository, ICartaoRepository cartaoRepository, IMapper mapper, Notification notification, ILogger<LancamentoService> logger)
         {
             _repository = repository;
             _contaRepository = contaRepository;
@@ -25,6 +26,7 @@ namespace MoneyAPI.Services
             _cartaoRepository = cartaoRepository;
             _mapper = mapper;
             _notification = notification;
+            _logger = logger;
         }
 
         public async Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId)
@@ -82,6 +84,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -89,6 +92,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.CreateAsync), lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -123,7 +127,7 @@ namespace MoneyAPI.Services
                 }
 
                 Categoria catFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
-                bool lancamentoFatura = categoria.Equals(catFatura);
+                bool lancamentoFatura = categoria.Id == catFatura.Id ;
 
                 if (lancamentoFatura && lancamento.Observacao == lancamentoDto.Observacao)
                 {
@@ -149,6 +153,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -156,6 +161,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateAsync), id, lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -204,7 +210,7 @@ namespace MoneyAPI.Services
 
                 DateOnly dataOriginal = lancamentoDto.Data;
                 bool ultimoDiaMes = lancamentoDto.Data.Day == DateTime.DaysInMonth(lancamentoDto.Data.Year, lancamentoDto.Data.Month);
-                int mes = lancamentoDto.Data.Month;
+                int mes = 0;
 
                 foreach (Lancamento l in lancamentos)
                 {
@@ -236,6 +242,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateFixoAsync), id, lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -243,6 +250,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.UpdateFixoAsync), id, lancamentoDto, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -278,6 +286,7 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
@@ -285,6 +294,7 @@ namespace MoneyAPI.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | DTO: {@Entidade} | UsuarioId: {UsuarioId}", nameof(this.DeleteAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;
@@ -336,12 +346,14 @@ namespace MoneyAPI.Services
             }
             catch (NullReferenceException ex)
             {
+                _logger.LogError(ex, "Erro de NullReferenceException no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteFixoAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message;
                 response.StatusCode = 404;
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Erro no método {Method} | ID: {ID} | UsuarioId: {UsuarioId}", nameof(this.DeleteFixoAsync), id, usuarioId);
                 response.Sucesso = false;
                 response.Erro = ex.Message + "\n" + ex.InnerException;
                 response.StatusCode = 500;

@@ -128,7 +128,7 @@ namespace MoneyAPI.Controllers
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ResponseLancamentoDto lancamento = await _service.GetLancamentoByIdAsync(id, 1);
+            ResponseLancamentoDto lancamento = await _service.GetLancamentoByIdAsync(id, UsuarioId.Value);
 
             if (lancamento == null)
                 return NotFound();
