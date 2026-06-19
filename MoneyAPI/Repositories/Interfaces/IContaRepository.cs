@@ -8,6 +8,6 @@ namespace MoneyAPI.Repositories.Interfaces
 
         Task<Conta> GetContaById(int id, int usuarioId);
 
-        Task<Conta> GetContaByNome(string nome, int usuarioId);
+        Task<Conta> GetContaByNome(string nome, int usuarioId, int? excludeId = null);
     }
 }

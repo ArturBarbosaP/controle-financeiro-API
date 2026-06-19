@@ -33,12 +33,13 @@ namespace MoneyAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Cartao> GetCartaoByNome(string nome, int usuarioId)
+        public async Task<Cartao> GetCartaoByNome(string nome, int usuarioId, int? excludeId = null)
         {
             return await _context.Cartoes
                 .Include(c => c.Conta)
                 .Where(co => co.Conta.UsuarioId == usuarioId)
                 .Where(ca => ca.Nome == nome)
+                .Where(ca => excludeId == null || ca.Id != excludeId)
                 .FirstOrDefaultAsync();
         }
 

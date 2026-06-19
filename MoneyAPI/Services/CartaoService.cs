@@ -86,7 +86,7 @@ namespace MoneyAPI.Services
 
                 if (alteracaoNome)
                 {
-                    if (await _repository.GetCartaoByNome(cartaoDto.Nome, usuarioId) != null)
+                    if (await _repository.GetCartaoByNome(cartaoDto.Nome, usuarioId, id) != null)
                     {
                         //bloquear se ja existir cartao com o mesmo nome, caso o nome seja alterado
                         response.Sucesso = false;

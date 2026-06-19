@@ -65,11 +65,12 @@ namespace MoneyAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Categoria> GetCategoriaByNome(string nome, string tipo, int usuarioId)
+        public async Task<Categoria> GetCategoriaByNome(string nome, string tipo, int usuarioId, int? excludeId = null)
         {
             return await _context.Categorias
                 .Where(u => u.UsuarioId == usuarioId)
                 .Where(c => c.Nome == nome && c.Tipo == tipo)
+                .Where(c => excludeId == null || c.Id != excludeId)
                 .FirstOrDefaultAsync();
         }
     }

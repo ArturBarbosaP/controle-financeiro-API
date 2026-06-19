@@ -16,6 +16,6 @@ namespace MoneyAPI.Repositories.Interfaces
 
         Task<Categoria> GetCategoriaPadraoFatura(int usuarioId);
 
-        Task<Categoria> GetCategoriaByNome(string nome, string tipo, int usuarioId);
+        Task<Categoria> GetCategoriaByNome(string nome, string tipo, int usuarioId, int? excludeId = null);
     }
 }

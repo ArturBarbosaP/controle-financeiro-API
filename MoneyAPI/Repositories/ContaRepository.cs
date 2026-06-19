@@ -29,11 +29,12 @@ namespace MoneyAPI.Repositories
                 .ToListAsync();
         }
 
-        public async Task<Conta> GetContaByNome(string nome, int usuarioId)
+        public async Task<Conta> GetContaByNome(string nome, int usuarioId, int? excludeId = null)
         {
             return await _context.Contas
                 .Where(u => u.UsuarioId == usuarioId)
                 .Where(c => c.Nome == nome)
+                .Where(c => excludeId == null || c.Id != excludeId)
                 .FirstOrDefaultAsync();
         }
     }

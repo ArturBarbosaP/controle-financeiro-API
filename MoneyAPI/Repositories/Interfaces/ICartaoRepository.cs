@@ -8,7 +8,7 @@ namespace MoneyAPI.Repositories.Interfaces
 
         Task<Cartao> GetCartaoById(int id, int usuarioId);
 
-        Task<Cartao> GetCartaoByNome(string nome, int usuarioId);
+        Task<Cartao> GetCartaoByNome(string nome, int usuarioId, int? excludeId = null);
 
         Task<List<Cartao>> GetCartoesFechados();
     }

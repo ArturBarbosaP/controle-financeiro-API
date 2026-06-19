@@ -64,7 +64,7 @@ namespace MoneyAPI.Services
             {
                 Conta conta = await _repository.GetContaById(id, usuarioId) ?? throw new NullReferenceException("A conta não existe!");
 
-                if (contaDto.Nome != conta.Nome && await _repository.GetContaByNome(contaDto.Nome, usuarioId) != null)
+                if (contaDto.Nome != conta.Nome && await _repository.GetContaByNome(contaDto.Nome, usuarioId, id) != null)
                 {   //bloquear se ja existir conta com o mesmo nome, caso o nome seja alterado
                     response.Sucesso = false;
                     response.Erro = "Já existe uma conta com o novo nome!";

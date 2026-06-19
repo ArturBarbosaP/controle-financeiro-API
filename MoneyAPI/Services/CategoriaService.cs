@@ -64,7 +64,7 @@ namespace MoneyAPI.Services
             {
                 Categoria categoria = await _repository.GetCategoriaById(id, usuarioId) ?? throw new NullReferenceException("A categoria não existe!");
 
-                if (categoriaDto.Nome != categoria.Nome && await _repository.GetCategoriaByNome(categoriaDto.Nome, categoriaDto.Tipo, usuarioId) != null)
+                if (categoriaDto.Nome != categoria.Nome && await _repository.GetCategoriaByNome(categoriaDto.Nome, categoriaDto.Tipo, usuarioId, id) != null)
                 {   //bloquear se ja existir categoria com o mesmo nome, caso o nome seja alterado
                     response.Sucesso = false;
                     response.Erro = "Já existe uma categoria com o novo nome!";
