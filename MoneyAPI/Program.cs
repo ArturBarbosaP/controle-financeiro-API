@@ -52,6 +52,9 @@ builder.Services.AddDbContext<ApplicationContext>(options =>
         assembly => assembly.MigrationsAssembly(typeof(ApplicationContext).Assembly.FullName));
 });
 
+//healthcheck
+builder.Services.AddHealthChecks().AddDbContextCheck<ApplicationContext>();
+
 //CORS
 builder.Services.AddCors(options =>
 {
@@ -140,14 +143,20 @@ app.UseSerilogRequestLogging(opts =>
 
 app.UseMiddleware<ExceptionMiddleware>();
 
-app.UseSwagger();
+//healthcheck
+app.MapHealthChecks("/health");
 
-//tema escuro pro swagger
-app.UseSwaggerUI(Theme.UniversalDark, null, c =>
+if (app.Environment.IsDevelopment())
 {
-    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Money API v1");
-    c.RoutePrefix = string.Empty;
-});
+    app.UseSwagger();
+
+    //tema escuro pro swagger
+    app.UseSwaggerUI(Theme.UniversalDark, null, c =>
+    {
+        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Money API v1");
+        c.RoutePrefix = string.Empty;
+    });
+}
 
 app.UseCors("AllowClients");
 
