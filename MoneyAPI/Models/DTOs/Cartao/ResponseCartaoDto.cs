@@ -19,5 +19,7 @@
         public int ContaId { get; set; }
 
         public string ContaNome { get; set; }
+
+        public decimal Fatura { get; set; }
     }
 }

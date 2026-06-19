@@ -48,7 +48,16 @@ namespace MoneyAPI.Helpers
             CreateMap<RequestCartaoDto, Cartao>();
 
             CreateMap<Cartao, ResponseCartaoDto>()
-                .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome));
+                .ForMember(dest => dest.ContaNome, opt => opt.MapFrom(src => src.Conta.Nome))
+                .ForMember(dest => dest.Fatura,
+                            opt => opt.MapFrom(src => src.Lancamentos
+                                    .Where(l =>
+                                        l.Data >= src.DataFechamento.AddMonths(-1).AddDays(1) &&
+                                        l.Data <= src.DataFechamento
+                                    )
+                                    .Sum(l => l.Valor)
+                            )
+                );
 
             #endregion
 
