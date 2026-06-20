@@ -136,6 +136,20 @@ namespace MoneyAPI.Controllers
             return Ok(lancamento);
         }
 
+        [SwaggerOperation(Summary = "Saldo acumulado", Description = "Retorna o saldo acumulado de todos os lançamentos do ano selecionado para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("saldoAcumulado/{data}")]
+        public async Task<IActionResult> GetSaldoAcumulado(DateOnly data)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            decimal response = await _service.GetSaldoAcumuladoAsync(data, UsuarioId.Value);
+
+            return Ok(response);
+        }
+
         [SwaggerOperation(Summary = "Executar AlterarPreLancamentoAsync", Description = "Executa o job de alterar pré lançamentos")]
         [ProducesResponseType(200)]
         [HttpGet("[action]")]

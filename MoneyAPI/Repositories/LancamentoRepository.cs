@@ -141,5 +141,16 @@ namespace MoneyAPI.Repositories
                     && l.Data <= dataFim)
                 .SumAsync(l => l.Valor);
         }
+
+        public Task<decimal> GetSaldoAcumulado(DateOnly data, int usuarioId)
+        {
+            return _context.Lancamentos
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.Tipo != "Transf."
+                    && l.CartaoId == null 
+                    && l.Data >= new DateOnly(data.Year, 1, 1)
+                    && l.Data <= data)
+                .SumAsync(l => l.Valor);
+        }
     }
 }
