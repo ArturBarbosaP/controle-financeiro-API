@@ -107,7 +107,7 @@ namespace MoneyAPI.Controllers
         [SwaggerOperation(Summary = "Listar lançamentos", Description = "Retorna todos os lançamentos do mês selecionado para o usuário autenticado")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
         [ProducesResponseType(401)]
-        [HttpGet]
+        [HttpGet("mes/{data}")]
         public async Task<IActionResult> GetAll(DateOnly data)
         {
             if (UsuarioId == null)

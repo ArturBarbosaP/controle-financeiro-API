@@ -33,5 +33,7 @@
         public int ContaDestinoId { get; set; }
 
         public string ContaDestinoNome { get; set; }
+
+        public string CategoriaCor { get; set; }
     }
 }
