@@ -118,6 +118,20 @@ namespace MoneyAPI.Controllers
             return Ok(lancamentos);
         }
 
+        [SwaggerOperation(Summary = "Listar lançamentos pela categoria", Description = "Retorna todos os lançamentos do mês pela categoria selecionada para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("mes/{data}/{categoriaId}")]
+        public async Task<IActionResult> GetAllCategoria(DateOnly data, int categoriaId)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<ResponseLancamentoDto> lancamentos = await _service.GetLancamentosPorCategoriaMensalAsync(UsuarioId.Value, categoriaId, data.Month, data.Year);
+
+            return Ok(lancamentos);
+        }
+
         [SwaggerOperation(Summary = "Buscar lançamento", Description = "Retorna o lançamento com o ID informado")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
         [ProducesResponseType(401)]

@@ -115,9 +115,9 @@ namespace MoneyAPI.Repositories
         /// <param name="dataInicio"></param>
         /// <param name="dataFim"></param>
         /// <returns>A soma de todos os valores dos lançamentos na fatura do cartão</returns>
-        public Task<decimal> GetLancamentosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
+        public async Task<decimal> GetLancamentosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
         {
-            return _context.Lancamentos
+            return await _context.Lancamentos
                 .Where(l => l.CartaoId == cartaoId
                     && !Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
                     && l.Data >= dataInicio
@@ -132,9 +132,9 @@ namespace MoneyAPI.Repositories
         /// <param name="dataInicio"></param>
         /// <param name="dataFim"></param>
         /// <returns>A soma de todos os valores dos lançamentos parcelados na fatura do cartão</returns>
-        public Task<decimal> GetLancamentosParceladosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
+        public async Task<decimal> GetLancamentosParceladosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim)
         {
-            return _context.Lancamentos
+            return await _context.Lancamentos
                 .Where(l => l.CartaoId == cartaoId
                     && Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
                     && l.Data >= dataInicio
@@ -142,9 +142,9 @@ namespace MoneyAPI.Repositories
                 .SumAsync(l => l.Valor);
         }
 
-        public Task<decimal> GetSaldoAcumulado(DateOnly data, int usuarioId)
+        public async Task<decimal> GetSaldoAcumulado(DateOnly data, int usuarioId)
         {
-            return _context.Lancamentos
+            return await _context.Lancamentos
                 .Where(u => u.UsuarioId == usuarioId)
                 .Where(l => l.Tipo != "Transf."
                     && l.CartaoId == null 
@@ -167,17 +167,35 @@ namespace MoneyAPI.Repositories
                 .ToDictionaryAsync(x => x.CategoriaId, x => x.Total);
         }
 
-        public Task<decimal> GetValorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano)
+        public async Task<decimal> GetValorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano)
         {
             DateOnly dataInicio = new(ano, mes, 1);
             DateOnly dataFim = dataInicio.AddMonths(1).AddDays(-1);
 
-            return _context.Lancamentos
+            return await _context.Lancamentos
                 .Where(l => l.UsuarioId == usuarioId
                     && l.Data >= dataInicio
                     && l.Data <= dataFim
                     && l.CategoriaId == categoriaId)
                 .SumAsync(l => l.Valor);
+        }
+
+        public async Task<IEnumerable<Lancamento>> GetLancamentosPorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano)
+        {
+            DateOnly dataInicio = new(ano, mes, 1);
+            DateOnly dataFim = dataInicio.AddMonths(1).AddDays(-1);
+
+            return await _context.Lancamentos
+                .Include(x => x.Conta)
+                .Include(x => x.Categoria)
+                .Include(x => x.Cartao)
+                .Include(x => x.ContaDestino)
+                .Where(l => l.UsuarioId == usuarioId
+                    && l.Data >= dataInicio
+                    && l.Data <= dataFim
+                    && l.CategoriaId == categoriaId)
+                .OrderBy(l => l.Data)
+                .ToListAsync();
         }
     }
 }
