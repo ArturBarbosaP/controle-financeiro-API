@@ -88,13 +88,13 @@ namespace MoneyAPI.Controllers
         [ProducesResponseType(typeof(IEnumerable<ResponseLimiteDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetById(int id)
+        [HttpGet("mes/{data}/{id}")]
+        public async Task<IActionResult> GetById(DateOnly data, int id)
         {
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ResponseLimiteDto limite = await _service.GetLimiteByIdAsync(id, UsuarioId.Value);
+            ResponseLimiteDto? limite = await _service.GetLimiteByIdAsync(id, data.Month, data.Year, UsuarioId.Value);
 
             if (limite == null)
                 return NotFound();

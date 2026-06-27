@@ -166,5 +166,18 @@ namespace MoneyAPI.Repositories
                 .Select(g => new { CategoriaId = g.Key, Total = g.Sum(l => l.Valor) })
                 .ToDictionaryAsync(x => x.CategoriaId, x => x.Total);
         }
+
+        public Task<decimal> GetValorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano)
+        {
+            DateOnly dataInicio = new(ano, mes, 1);
+            DateOnly dataFim = dataInicio.AddMonths(1).AddDays(-1);
+
+            return _context.Lancamentos
+                .Where(l => l.UsuarioId == usuarioId
+                    && l.Data >= dataInicio
+                    && l.Data <= dataFim
+                    && l.CategoriaId == categoriaId)
+                .SumAsync(l => l.Valor);
+        }
     }
 }

@@ -23,5 +23,7 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<decimal> GetSaldoAcumulado(DateOnly data, int usuarioId);
 
         Task<Dictionary<int, decimal>> GetValoresPorCategoriaMensal(int usuarioId, int mes, int ano);
+
+        Task<decimal> GetValorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano);
     }
 }
