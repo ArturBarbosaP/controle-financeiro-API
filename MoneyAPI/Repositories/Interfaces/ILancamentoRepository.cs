@@ -21,5 +21,7 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<decimal> GetLancamentosNaFatura(int cartaoId, DateOnly dataInicio, DateOnly dataFim);
 
         Task<decimal> GetSaldoAcumulado(DateOnly data, int usuarioId);
+
+        Task<Dictionary<int, decimal>> GetValoresPorCategoriaMensal(int usuarioId, int mes, int ano);
     }
 }

@@ -11,13 +11,15 @@ namespace MoneyAPI.Services
     {
         private readonly ILimiteRepository _repository;
         private readonly ICategoriaRepository _categoriaRepository;
+        private readonly ILancamentoRepository _lancamentoRepository;
         private readonly IMapper _mapper;
         private readonly ILogger<LimiteService> _logger;
 
-        public LimiteService(ILimiteRepository repository, ICategoriaRepository categoriaRepository, IMapper mapper, ILogger<LimiteService> logger)
+        public LimiteService(ILimiteRepository repository, ICategoriaRepository categoriaRepository, ILancamentoRepository lancamentoRepository, IMapper mapper, ILogger<LimiteService> logger)
         {
             _repository = repository;
             _categoriaRepository = categoriaRepository;
+            _lancamentoRepository = lancamentoRepository;
             _mapper = mapper;
             _logger = logger;
         }
@@ -132,9 +134,22 @@ namespace MoneyAPI.Services
             return _mapper.Map<ResponseLimiteDto>(await _repository.GetLimiteById(id, usuarioId));
         }
 
-        public async Task<IEnumerable<ResponseLimiteDto>> GetLimitesAsync(int usuarioId)
+        public async Task<IEnumerable<ResponseLimiteDto>> GetLimitesAsync(int usuarioId, int mes, int ano)
         {
-            return _mapper.Map<IEnumerable<ResponseLimiteDto>>(await _repository.GetLimites(usuarioId));
+            IEnumerable<Limite> limites = await _repository.GetLimites(usuarioId);
+
+            var valoresGastos = await _lancamentoRepository.GetValoresPorCategoriaMensal(usuarioId, mes, ano);
+
+            return limites.Select(l => new ResponseLimiteDto
+            {
+                Id = l.Id,
+                CategoriaId = l.CategoriaId,
+                CategoriaNome = l.Categoria.Nome,
+                CategoriaCor = l.Categoria.Cor,
+                ValorLimite = l.ValorLimite,
+                ValorGasto = valoresGastos.TryGetValue(l.CategoriaId, out var valorGasto) ? Math.Abs(valorGasto) : 0,
+                ValorRestante = l.ValorLimite - (valoresGastos.TryGetValue(l.CategoriaId, out var gasto) ? Math.Abs(gasto) : 0)
+            });
         }
     }
 }

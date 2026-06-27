@@ -73,13 +73,13 @@ namespace MoneyAPI.Controllers
         [SwaggerOperation(Summary = "Listar limites", Description = "Retorna todas os limites para o usuário autenticado")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLimiteDto>), 200)]
         [ProducesResponseType(401)]
-        [HttpGet]
-        public async Task<IActionResult> GetAll()
+        [HttpGet("mes/{data}")]
+        public async Task<IActionResult> GetAll(DateOnly data)
         {
             if (UsuarioId == null)
                 return Unauthorized();
 
-            IEnumerable<ResponseLimiteDto> limites = await _service.GetLimitesAsync(UsuarioId.Value);
+            IEnumerable<ResponseLimiteDto> limites = await _service.GetLimitesAsync(UsuarioId.Value, data.Month, data.Year);
 
             return Ok(limites);
         }

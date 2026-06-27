@@ -66,7 +66,8 @@ namespace MoneyAPI.Helpers
             CreateMap<RequestLimiteDto, Limite>();
 
             CreateMap<Limite, ResponseLimiteDto>()
-                .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome));
+                .ForMember(dest => dest.CategoriaNome, opt => opt.MapFrom(src => src.Categoria.Nome))
+                .ForMember(dest => dest.CategoriaCor, opt => opt.MapFrom(src => src.Categoria.Cor));
 
             #endregion
 

@@ -8,6 +8,12 @@
 
         public int CategoriaId { get; set; }
 
-        public string? CategoriaNome { get; set; }
+        public decimal ValorGasto { get; set; }
+
+        public decimal ValorRestante { get; set; }
+
+        public string CategoriaNome { get; set; }
+
+        public string CategoriaCor { get; set; }
     }
 }
