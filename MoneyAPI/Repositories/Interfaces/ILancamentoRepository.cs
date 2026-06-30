@@ -1,4 +1,5 @@
-﻿using MoneyAPI.Models.Entities;
+﻿using MoneyAPI.Models.DTOs.Lancamento;
+using MoneyAPI.Models.Entities;
 
 namespace MoneyAPI.Repositories.Interfaces
 {
@@ -27,5 +28,9 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<decimal> GetValorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano);
 
         Task<IEnumerable<Lancamento>> GetLancamentosPorCategoriaMensal(int usuarioId, int categoriaId, int mes, int ano);
+
+        Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaMensal(int usuarioId, DateOnly data);
+
+        Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaAnual(int usuarioId, DateOnly data);
     }
 }

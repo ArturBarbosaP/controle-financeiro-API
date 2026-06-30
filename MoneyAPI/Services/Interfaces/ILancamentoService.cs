@@ -9,6 +9,8 @@ namespace MoneyAPI.Services.Interfaces
         Task<ResponseLancamentoDto> GetLancamentoByIdAsync(int id, int usuarioId);
         Task<decimal> GetSaldoAcumuladoAsync(DateOnly data, int usuarioId);
         Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosPorCategoriaMensalAsync(int usuarioId, int categoriaId, int mes, int ano);
+        Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaMensalAsync(int usuarioId, DateOnly data);
+        Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaAnualAsync(int usuarioId, DateOnly data);
         Task<ResponseDto> CreateAsync(RequestLancamentoDto lancamentoDto, int usuarioId);
         Task<ResponseDto> UpdateAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId);
         Task<ResponseDto> UpdateFixoAsync(int id, RequestLancamentoDto lancamentoDto, int usuarioId);

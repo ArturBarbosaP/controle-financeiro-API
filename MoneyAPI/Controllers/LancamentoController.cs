@@ -132,6 +132,34 @@ namespace MoneyAPI.Controllers
             return Ok(lancamentos);
         }
 
+        [SwaggerOperation(Summary = "Listar lançamentos agrupados pela categoria", Description = "Retorna todos os lançamentos no mês selecionado agrupados pela categoria para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<GastosPorCategoriaDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("relatorioMensal/mes/{data}")]
+        public async Task<IActionResult> GetAllGroupByCategoriaMonth(DateOnly data)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<GastosPorCategoriaDto> lancamentos = await _service.GetLancamentosGroupByCategoriaMensalAsync(UsuarioId.Value, data);
+
+            return Ok(lancamentos);
+        }
+
+        [SwaggerOperation(Summary = "Listar lançamentos agrupados pela categoria", Description = "Retorna todos os lançamentos no ano selecionado agrupados pela categoria para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<GastosPorCategoriaDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("relatorioMensal/ano/{data}")]
+        public async Task<IActionResult> GetAllGroupByCategoriaYear(DateOnly data)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<GastosPorCategoriaDto> lancamentos = await _service.GetLancamentosGroupByCategoriaAnualAsync(UsuarioId.Value, data);
+
+            return Ok(lancamentos);
+        }
+
         [SwaggerOperation(Summary = "Buscar lançamento", Description = "Retorna o lançamento com o ID informado")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
         [ProducesResponseType(401)]

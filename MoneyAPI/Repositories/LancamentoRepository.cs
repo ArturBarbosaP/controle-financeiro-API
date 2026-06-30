@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using MoneyAPI.Data;
 using MoneyAPI.Helpers;
+using MoneyAPI.Models.DTOs.Lancamento;
 using MoneyAPI.Models.Entities;
 using MoneyAPI.Repositories.Interfaces;
 using System.Text.RegularExpressions;
@@ -149,7 +150,7 @@ namespace MoneyAPI.Repositories
                 .Where(l => l.Tipo != "Transf."
                     && l.CartaoId == null 
                     && l.Data >= new DateOnly(data.Year, 1, 1)
-                    && l.Data <= data)
+                    && l.Data <= new DateOnly(data.Year, data.Month, DateTime.DaysInMonth(data.Year, data.Month)))
                 .SumAsync(l => l.Valor);
         }
 
@@ -195,6 +196,49 @@ namespace MoneyAPI.Repositories
                     && l.Data <= dataFim
                     && l.CategoriaId == categoriaId)
                 .OrderBy(l => l.Data)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaMensal(int usuarioId, DateOnly data)
+        {
+            DateOnly dataInicio = new(data.Year, data.Month, 1);
+            DateOnly dataFim = dataInicio.AddMonths(1).AddDays(-1);
+
+            return await _context.Lancamentos
+                .Include(x => x.Categoria)
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.Data >= dataInicio
+                         && l.Data <= dataFim
+                         && !l.Categoria.Padrao
+                         && l.Categoria.Tipo == "Despesa")
+                .GroupBy(x => new { x.Categoria.Nome, x.Categoria.Cor })
+                .Select(g => new GastosPorCategoriaDto
+                {
+                    CategoriaNome = g.Key.Nome,
+                    CategoriaCor = g.Key.Cor,
+                    ValorTotal = g.Sum(l => l.Valor) * -1
+                })
+                .OrderByDescending(x => x.ValorTotal)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaAnual(int usuarioId, DateOnly data)
+        {
+            return await _context.Lancamentos
+                .Include(x => x.Categoria)
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(l => l.Data >= new DateOnly(data.Year, 1, 1)
+                         && l.Data <= new DateOnly(data.Year, data.Month, DateTime.DaysInMonth(data.Year, data.Month))
+                         && !l.Categoria.Padrao
+                         && l.Categoria.Tipo == "Despesa")
+                .GroupBy(x => new { x.Categoria.Nome, x.Categoria.Cor })
+                .Select(g => new GastosPorCategoriaDto
+                {
+                    CategoriaNome = g.Key.Nome,
+                    CategoriaCor = g.Key.Cor,
+                    ValorTotal = g.Sum(l => l.Valor) * -1
+                })
+                .OrderByDescending(x => x.ValorTotal)
                 .ToListAsync();
         }
     }
