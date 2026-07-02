@@ -6,6 +6,8 @@ namespace MoneyAPI.Repositories.Interfaces
     {
         Task<IEnumerable<Cartao>> GetCartoes(int usuarioId);
 
+        Task<IEnumerable<Cartao>> GetCartoesByConta(int usuarioId, int contaId);
+
         Task<Cartao> GetCartaoById(int id, int usuarioId);
 
         Task<Cartao> GetCartaoByNome(string nome, int usuarioId, int? excludeId = null);

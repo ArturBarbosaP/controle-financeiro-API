@@ -84,6 +84,20 @@ namespace MoneyAPI.Controllers
             return Ok(cartoes);
         }
 
+        [SwaggerOperation(Summary = "Listar cartões pela conta", Description = "Retorna todos os cartões da conta selecionada para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<RequestCartaoDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("conta/{contaId}")]
+        public async Task<IActionResult> GetByConta(int contaId)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<ResponseCartaoDto> cartoes = await _service.GetCartoesByContaAsync(UsuarioId.Value, contaId);
+
+            return Ok(cartoes);
+        }
+
         [SwaggerOperation(Summary = "Buscar cartão", Description = "Retorna o cartão com o ID informado")]
         [ProducesResponseType(typeof(IEnumerable<RequestCartaoDto>), 200)]
         [ProducesResponseType(401)]

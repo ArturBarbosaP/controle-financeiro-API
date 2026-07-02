@@ -226,6 +226,11 @@ namespace MoneyAPI.Services
             return _mapper.Map<IEnumerable<ResponseCartaoDto>>(await _repository.GetCartoes(usuarioId));
         }
 
+        public async Task<IEnumerable<ResponseCartaoDto>> GetCartoesByContaAsync(int usuarioId, int contaId)
+        {
+            return _mapper.Map<IEnumerable<ResponseCartaoDto>>(await _repository.GetCartoesByConta(usuarioId, contaId));
+        }
+
         public async Task ResetarFatura() //pr_ResetarFatura no banco antigo
         {
             List<Cartao> cartoes = await _repository.GetCartoesFechados();

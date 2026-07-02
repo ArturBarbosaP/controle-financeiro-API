@@ -6,6 +6,7 @@ namespace MoneyAPI.Services.Interfaces
     public interface ICartaoService
     {
         Task<IEnumerable<ResponseCartaoDto>> GetCartoesAsync(int usuarioId);
+        Task<IEnumerable<ResponseCartaoDto>> GetCartoesByContaAsync(int usuarioId, int contaId);
         Task<ResponseCartaoDto?> GetCartaoByIdAsync(int id, int usuarioId);
         Task<ResponseDto> CreateAsync(RequestCartaoDto cartaoDto, int usuarioId);
         Task<ResponseDto> UpdateAsync(int id, RequestCartaoDto cartaoDto, int usuarioId);

@@ -28,8 +28,15 @@ namespace MoneyAPI.Repositories
         {
             return await _context.Cartoes
                 .Include(c => c.Conta)
-                .Include(c => c.Lancamentos)
                 .Where(co => co.Conta.UsuarioId == usuarioId)
+                .ToListAsync();
+        }
+
+        public async Task<IEnumerable<Cartao>> GetCartoesByConta(int usuarioId, int contaId)
+        {
+            return await _context.Cartoes
+                .Include(c => c.Conta)
+                .Where(co => co.Conta.UsuarioId == usuarioId && co.ContaId == contaId)
                 .ToListAsync();
         }
 
