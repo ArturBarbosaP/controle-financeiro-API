@@ -129,11 +129,15 @@ namespace MoneyAPI.Services
             return response;
         }
 
-        public async Task<ResponseLimiteDto?> GetLimiteByIdAsync(int id, int mes, int ano, int usuarioId)
+        public async Task<ResponseLimiteDto?> GetLimiteByCategoriaIdAsync(int categoriaId, int mes, int ano, int usuarioId)
         {
             try
             {
-                Limite limite = await _repository.GetLimiteById(id, usuarioId);
+                Limite limite = await _repository.GetLimiteByCategoriaId(categoriaId, usuarioId);
+
+                if (limite == null)
+                    return null;
+
                 decimal valorGasto = await _lancamentoRepository.GetValorCategoriaMensal(usuarioId, limite.CategoriaId, mes, ano);
 
                 return new ResponseLimiteDto

@@ -23,6 +23,15 @@ namespace MoneyAPI.Repositories
                 .FirstOrDefaultAsync();
         }
 
+        public async Task<Limite> GetLimiteByCategoriaId(int categoriaId, int usuarioId)
+        {
+            return await _context.Limites
+                .Include(c => c.Categoria)
+                .Where(c => c.Categoria.UsuarioId == usuarioId)
+                .Where(l => l.CategoriaId == categoriaId)
+                .FirstOrDefaultAsync();
+        }
+
         public async Task<IEnumerable<Limite>> GetLimites(int usuarioId)
         {
             return await _context.Limites

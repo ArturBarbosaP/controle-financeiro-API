@@ -84,17 +84,17 @@ namespace MoneyAPI.Controllers
             return Ok(limites);
         }
 
-        [SwaggerOperation(Summary = "Buscar limite", Description = "Retorna o limite com o ID informado")]
+        [SwaggerOperation(Summary = "Buscar limite", Description = "Retorna o limite com o ID da categoria informada")]
         [ProducesResponseType(typeof(IEnumerable<ResponseLimiteDto>), 200)]
         [ProducesResponseType(401)]
         [ProducesResponseType(404)]
-        [HttpGet("mes/{data}/{id}")]
-        public async Task<IActionResult> GetById(DateOnly data, int id)
+        [HttpGet("mes/{data}/{categoriaId}")]
+        public async Task<IActionResult> GetByCategoriaId(DateOnly data, int categoriaId)
         {
             if (UsuarioId == null)
                 return Unauthorized();
 
-            ResponseLimiteDto? limite = await _service.GetLimiteByIdAsync(id, data.Month, data.Year, UsuarioId.Value);
+            ResponseLimiteDto? limite = await _service.GetLimiteByCategoriaIdAsync(categoriaId, data.Month, data.Year, UsuarioId.Value);
 
             if (limite == null)
                 return NotFound();

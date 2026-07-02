@@ -7,5 +7,7 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<IEnumerable<Limite>> GetLimites(int usuarioId);
 
         Task<Limite> GetLimiteById(int id, int usuarioId);
+
+        Task<Limite> GetLimiteByCategoriaId(int categoriaId, int usuarioId);
     }
 }
