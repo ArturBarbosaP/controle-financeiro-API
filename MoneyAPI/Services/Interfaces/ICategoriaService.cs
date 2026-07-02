@@ -6,6 +6,7 @@ namespace MoneyAPI.Services.Interfaces
     public interface ICategoriaService
     {
         Task<IEnumerable<ResponseCategoriaDto>> GetCategoriasAsync(int usuarioId);
+        Task<IEnumerable<ResponseCategoriaDto>> GetCategoriasByTipoAsync(int usuarioId, string tipo);
         Task<ResponseCategoriaDto?> GetCategoriaByIdAsync(int id, int usuarioId);
         Task<ResponseDto> CreateAsync(RequestCategoriaDto categoriaDto, int usuarioId);
         Task<ResponseDto> UpdateAsync(int id, RequestCategoriaDto categoriaDto, int usuarioId);

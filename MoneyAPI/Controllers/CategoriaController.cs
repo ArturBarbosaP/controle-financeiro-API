@@ -101,5 +101,19 @@ namespace MoneyAPI.Controllers
 
             return Ok(categoria);
         }
+
+        [SwaggerOperation(Summary = "Listar categorias pelo tipo", Description = "Retorna todas as categorias filtradas pelo tipo para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<ResponseCategoriaDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("tipo/{tipo}")]
+        public async Task<IActionResult> GetByTipo(string tipo)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<ResponseCategoriaDto> categoria = await _service.GetCategoriasByTipoAsync(UsuarioId.Value, tipo);
+
+            return Ok(categoria);
+        }
     }
 }

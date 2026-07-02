@@ -159,5 +159,10 @@ namespace MoneyAPI.Services
         {
             return _mapper.Map<IEnumerable<ResponseCategoriaDto>>(await _repository.GetCategorias(usuarioId));
         }
+
+        public async Task<IEnumerable<ResponseCategoriaDto>> GetCategoriasByTipoAsync(int usuarioId, string tipo)
+        {
+            return _mapper.Map<IEnumerable<ResponseCategoriaDto>>(await _repository.GetCategoriasByTipo(usuarioId, tipo));
+        }
     }
 }

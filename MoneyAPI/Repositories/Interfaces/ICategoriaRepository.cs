@@ -12,7 +12,7 @@ namespace MoneyAPI.Repositories.Interfaces
 
         Task<IEnumerable<Categoria>> GetCategoriasPadroes(int usuarioId);
 
-        Task<IEnumerable<Categoria>> GetCategoriasDeDespesa(int usuarioId);
+        Task<IEnumerable<Categoria>> GetCategoriasByTipo(int usuarioId, string tipo);
 
         Task<Categoria> GetCategoriaPadraoFatura(int usuarioId);
 

@@ -57,11 +57,11 @@ namespace MoneyAPI.Repositories
                 .FirstOrDefaultAsync();
         }
 
-        public async Task<IEnumerable<Categoria>> GetCategoriasDeDespesa(int usuarioId)
+        public async Task<IEnumerable<Categoria>> GetCategoriasByTipo(int usuarioId, string tipo)
         {
             return await _context.Categorias
                 .Where(u => u.UsuarioId == usuarioId)
-                .Where(c => c.Tipo == "Despesa")
+                .Where(c => c.Tipo == tipo)
                 .ToListAsync();
         }
 
