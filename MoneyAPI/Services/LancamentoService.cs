@@ -392,6 +392,11 @@ namespace MoneyAPI.Services
             return await _repository.GetLancamentosGroupByCategoriaAnual(usuarioId, data);
         }
 
+        public async Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosCartao(int usuarioId, DateOnly data, int cartaoId)
+        {
+            return _mapper.Map<IEnumerable<ResponseLancamentoDto>>(await _repository.GetLancamentosCartao(usuarioId, data.Month, data.Year, cartaoId));
+        }
+
         #region Triggers e procedures do legado
 
         private async Task InsertParcelado(RequestLancamentoDto lancamentoDto, int usuarioId, Conta conta, Conta? contaDestino, Cartao? cartao) //pr_AdicionarParcelado no banco antigo

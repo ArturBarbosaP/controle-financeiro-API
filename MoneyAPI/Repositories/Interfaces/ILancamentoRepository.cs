@@ -32,5 +32,7 @@ namespace MoneyAPI.Repositories.Interfaces
         Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaMensal(int usuarioId, DateOnly data);
 
         Task<IEnumerable<GastosPorCategoriaDto>> GetLancamentosGroupByCategoriaAnual(int usuarioId, DateOnly data);
+
+        Task<IEnumerable<Lancamento>> GetLancamentosCartao(int usuarioId, int mes, int ano, int cartaoId);
     }
 }

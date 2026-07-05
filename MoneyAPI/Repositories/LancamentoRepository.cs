@@ -241,5 +241,24 @@ namespace MoneyAPI.Repositories
                 .OrderByDescending(x => x.ValorTotal)
                 .ToListAsync();
         }
+
+        public async Task<IEnumerable<Lancamento>> GetLancamentosCartao(int usuarioId, int mes, int ano, int cartaoId)
+        {
+            Cartao? cartao = _context.Cartoes.Where(c => c.Id == cartaoId).FirstOrDefault();
+
+            if (cartao == null)
+                return new List<Lancamento>();
+
+            DateOnly dataFim = new DateOnly(ano, mes, cartao.DataFechamento.Day);
+            DateOnly dataInicio = dataFim.AddMonths(-1).AddDays(1);
+
+            return await _context.Lancamentos
+                .Where(l => l.UsuarioId == usuarioId
+                    && l.CartaoId == cartaoId
+                    && l.Data >= dataInicio
+                    && l.Data <= dataFim)
+                .OrderBy(x => x.Data)
+                .ToListAsync();
+        }
     }
 }

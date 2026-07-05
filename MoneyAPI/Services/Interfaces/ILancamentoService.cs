@@ -6,6 +6,7 @@ namespace MoneyAPI.Services.Interfaces
     public interface ILancamentoService
     {
         Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosMensalAsync(int usuarioId, int mes, int ano);
+        Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosCartao(int usuarioId, DateOnly data, int cartaoId);
         Task<ResponseLancamentoDto> GetLancamentoByIdAsync(int id, int usuarioId);
         Task<decimal> GetSaldoAcumuladoAsync(DateOnly data, int usuarioId);
         Task<IEnumerable<ResponseLancamentoDto>> GetLancamentosPorCategoriaMensalAsync(int usuarioId, int categoriaId, int mes, int ano);

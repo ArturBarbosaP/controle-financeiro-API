@@ -132,6 +132,20 @@ namespace MoneyAPI.Controllers
             return Ok(lancamentos);
         }
 
+        [SwaggerOperation(Summary = "Listar lançamentos na fatura do cartão", Description = "Retorna todos os lançamentos na fatura do cartão do mês selecionado para o usuário autenticado")]
+        [ProducesResponseType(typeof(IEnumerable<ResponseLancamentoDto>), 200)]
+        [ProducesResponseType(401)]
+        [HttpGet("cartao/{cartaoId}/{data}")]
+        public async Task<IActionResult> GetAllCartoes(int cartaoId, DateOnly data)
+        {
+            if (UsuarioId == null)
+                return Unauthorized();
+
+            IEnumerable<ResponseLancamentoDto> lancamentos = await _service.GetLancamentosCartao(UsuarioId.Value, data, cartaoId);
+
+            return Ok(lancamentos);
+        }
+
         [SwaggerOperation(Summary = "Listar lançamentos agrupados pela categoria", Description = "Retorna todos os lançamentos no mês selecionado agrupados pela categoria para o usuário autenticado")]
         [ProducesResponseType(typeof(IEnumerable<GastosPorCategoriaDto>), 200)]
         [ProducesResponseType(401)]
