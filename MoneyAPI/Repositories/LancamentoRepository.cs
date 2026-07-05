@@ -253,6 +253,10 @@ namespace MoneyAPI.Repositories
             DateOnly dataInicio = dataFim.AddMonths(-1).AddDays(1);
 
             return await _context.Lancamentos
+                .Include(x => x.Conta)
+                .Include(x => x.Categoria)
+                .Include(x => x.Cartao)
+                .Include(x => x.ContaDestino)
                 .Where(l => l.UsuarioId == usuarioId
                     && l.CartaoId == cartaoId
                     && l.Data >= dataInicio
