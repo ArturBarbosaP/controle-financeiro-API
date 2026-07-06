@@ -184,6 +184,20 @@ namespace MoneyAPI.Services
                     return response;
                 }
 
+                //atualizando as datas e os limites do cartao
+                DateOnly dataInicio = cartao.DataFechamento.AddMonths(-1).AddDays(1);
+                decimal valorParcelado = await _lancamentoRepository.GetLancamentosParceladosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
+                decimal valorFatura = await _lancamentoRepository.GetLancamentosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
+
+                cartao.DataFechamento = cartao.DataFechamento.AddMonths(1);
+                cartao.DataVencimento = cartao.DataVencimento.AddMonths(1);
+
+                cartao.ValorParcelado += valorParcelado;
+                cartao.LimiteDisponivel = cartao.Limite + valorFatura - cartao.ValorParcelado;
+
+                _repository.Update(cartao);
+
+                //atualizando o lancamento da fatura
                 fatura.PreLancamento = false;
                 fatura.Observacao = $"{fatura.Observacao} - Data de pagamento: {DateTime.Now.ToString("dd/MM/yyyy")}";
 
@@ -240,23 +254,8 @@ namespace MoneyAPI.Services
 
             foreach (Cartao cartao in cartoes)
             {
-                DateOnly dataInicio = cartao.DataFechamento.AddMonths(-1).AddDays(1);
-                decimal valorParcelado = await _lancamentoRepository.GetLancamentosParceladosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
-                decimal valorFatura = await _lancamentoRepository.GetLancamentosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
-
-                cartao.DataFechamento = cartao.DataFechamento.AddMonths(1);
-                cartao.DataVencimento = cartao.DataVencimento.AddMonths(1);
-
-                cartao.ValorParcelado += valorParcelado;
-                cartao.LimiteDisponivel = cartao.Limite + valorFatura - cartao.ValorParcelado;
-
-                _repository.Update(cartao);
-
                 _notification.Insert(cartao.Conta.UsuarioId, $"\n{cartao.Nome} fechando hoje");
             }
-
-            if (!await _repository.SaveChanges())
-                throw new Exception("Não foi possível alterar no banco no banco!");
         }
     }
 }

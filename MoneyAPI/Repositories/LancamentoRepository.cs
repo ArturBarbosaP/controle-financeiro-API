@@ -122,7 +122,7 @@ namespace MoneyAPI.Repositories
                 .Where(l => l.CartaoId == cartaoId
                     && !Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
                     && l.Data >= dataInicio
-                    && l.Data <= dataFim)
+                    && l.Data < dataFim)
                 .SumAsync(l => l.Valor);
         }
 
@@ -139,7 +139,7 @@ namespace MoneyAPI.Repositories
                 .Where(l => l.CartaoId == cartaoId
                     && Regex.IsMatch(l.Descricao, @"^[0-9]+/[0-9]+")
                     && l.Data >= dataInicio
-                    && l.Data <= dataFim)
+                    && l.Data < dataFim)
                 .SumAsync(l => l.Valor);
         }
 

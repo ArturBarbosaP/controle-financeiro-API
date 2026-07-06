@@ -523,13 +523,13 @@ namespace MoneyAPI.Services
             DateOnly dataInicioFatura = cartao.DataFechamento.AddMonths(-1).AddDays(1);
             int addMonths = 0;
 
-            if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura)) //fatura atual
+            if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura)) //fatura atual
             {
                 AtualizarLimite(valorOperacao, cartao);
             }
-            else if (lancamento.Data > dataFinalFatura)
+            else if (lancamento.Data >= dataFinalFatura)
             {
-                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura))
                 {
                     addMonths++;
                     dataInicioFatura = dataInicioFatura.AddMonths(1);
@@ -538,7 +538,7 @@ namespace MoneyAPI.Services
             }
             else if (lancamento.Data < dataInicioFatura)
             {
-                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura))
                 {
                     addMonths--;
                     dataInicioFatura = dataInicioFatura.AddMonths(-1);

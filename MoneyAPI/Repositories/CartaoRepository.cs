@@ -53,7 +53,7 @@ namespace MoneyAPI.Repositories
         {
             return await _context.Cartoes
                 .Include(c => c.Conta)
-                .Where(c => DateOnly.FromDateTime(DateTime.Now) > c.DataFechamento)
+                .Where(c => DateOnly.FromDateTime(DateTime.Now) >= c.DataFechamento)
                 .ToListAsync();
         }
     }
