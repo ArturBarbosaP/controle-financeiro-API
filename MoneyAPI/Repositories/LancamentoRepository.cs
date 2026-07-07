@@ -250,7 +250,7 @@ namespace MoneyAPI.Repositories
                 return new List<Lancamento>();
 
             DateOnly dataFim = new DateOnly(ano, mes, cartao.DataFechamento.Day);
-            DateOnly dataInicio = dataFim.AddMonths(-1).AddDays(1);
+            DateOnly dataInicio = dataFim.AddMonths(-1);
 
             return await _context.Lancamentos
                 .Include(x => x.Conta)
@@ -260,7 +260,7 @@ namespace MoneyAPI.Repositories
                 .Where(l => l.UsuarioId == usuarioId
                     && l.CartaoId == cartaoId
                     && l.Data >= dataInicio
-                    && l.Data <= dataFim)
+                    && l.Data < dataFim)
                 .OrderBy(x => x.Data)
                 .ToListAsync();
         }

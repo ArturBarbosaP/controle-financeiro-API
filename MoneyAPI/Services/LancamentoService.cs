@@ -519,31 +519,36 @@ namespace MoneyAPI.Services
             decimal valorOperacao = excluir ? lancamento.Valor * -1 : lancamento.Valor;
 
             Categoria categoriaFatura = await _categoriaRepository.GetCategoriaPadraoFatura(usuarioId);
-            DateOnly dataFinalFatura = cartao.DataFechamento;
-            DateOnly dataInicioFatura = cartao.DataFechamento.AddMonths(-1).AddDays(1);
+            DateOnly dataInicioFatura = cartao.DataFechamento.AddMonths(-1);
+            DateOnly dataFinalFatura = cartao.DataFechamento.AddDays(-1);
+            
             int addMonths = 0;
 
-            if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura)) //fatura atual
+            if (!parcelado && (lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura)) //fatura atual
             {
                 AtualizarLimite(valorOperacao, cartao);
             }
-            else if (lancamento.Data >= dataFinalFatura)
+            else if (lancamento.Data > dataFinalFatura) //próxima fatura
             {
-                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura))
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
                 {
                     addMonths++;
                     dataInicioFatura = dataInicioFatura.AddMonths(1);
                     dataFinalFatura = dataFinalFatura.AddMonths(1);
                 }
             }
-            else if (lancamento.Data < dataInicioFatura)
+            else if (lancamento.Data < dataInicioFatura) //fatura anterior
             {
-                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data < dataFinalFatura))
+                while (!(lancamento.Data >= dataInicioFatura && lancamento.Data <= dataFinalFatura))
                 {
                     addMonths--;
                     dataInicioFatura = dataInicioFatura.AddMonths(-1);
                     dataFinalFatura = dataFinalFatura.AddMonths(-1);
                 }
+            }
+            else
+            {
+                throw new Exception("Data do lançamento não está dentro de nenhuma fatura!");
             }
 
             Lancamento fatura = await _repository.GetLancamentoFaturaCartao(cartao.Nome, cartao.DataVencimento.AddMonths(addMonths), cartao.ContaId, categoriaFatura.Id, usuarioId);

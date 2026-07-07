@@ -52,8 +52,8 @@ namespace MoneyAPI.Helpers
                 .ForMember(dest => dest.Fatura,
                             opt => opt.MapFrom(src => src.Lancamentos
                                     .Where(l =>
-                                        l.Data >= src.DataFechamento.AddMonths(-1).AddDays(1) &&
-                                        l.Data <= src.DataFechamento
+                                        l.Data >= src.DataFechamento.AddMonths(-1) &&
+                                        l.Data < src.DataFechamento
                                     )
                                     .Sum(l => l.Valor)
                             )

@@ -185,7 +185,7 @@ namespace MoneyAPI.Services
                 }
 
                 //atualizando as datas e os limites do cartao
-                DateOnly dataInicio = cartao.DataFechamento.AddMonths(-1).AddDays(1);
+                DateOnly dataInicio = cartao.DataFechamento.AddMonths(-1);
                 decimal valorParcelado = await _lancamentoRepository.GetLancamentosParceladosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
                 decimal valorFatura = await _lancamentoRepository.GetLancamentosNaFatura(cartao.Id, dataInicio, cartao.DataFechamento);
 
