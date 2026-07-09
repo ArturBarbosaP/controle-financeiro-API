@@ -94,7 +94,14 @@ namespace MoneyAPI.Services
                 }
                 else
                 {
+                    Usuario usuario = await _repository.GetUsuarioById(usuarioId.Value);
                     response.Sucesso = true;
+                    response.Entidade = new ResponseLoginDTO
+                    {
+                        UsuarioId = usuario.Id,
+                        Nome = usuario.Nome,
+                        Token = token
+                    };
                 }
             }
             catch (Exception ex)
