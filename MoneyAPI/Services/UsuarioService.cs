@@ -31,6 +31,16 @@ namespace MoneyAPI.Services
 
             try
             {
+                Usuario usuarioExistente = await _repository.GetUsuarioByNomeUsuario(usuarioDto.NomeUsuario);
+
+                if (usuarioExistente != null)
+                {
+                    response.Sucesso = false;
+                    response.Erro = "Este usuário já está em uso!";
+                    response.StatusCode = 400;
+                    return response;
+                }
+
                 Usuario usuarioInsert = _mapper.Map<Usuario>(usuarioDto);
 
                 _repository.Add(usuarioInsert);
