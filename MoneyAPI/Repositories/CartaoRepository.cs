@@ -27,6 +27,7 @@ namespace MoneyAPI.Repositories
         {
             return await _context.Cartoes
                 .Include(c => c.Conta)
+                .Include(c => c.Lancamentos)
                 .Where(co => co.Conta.UsuarioId == usuarioId)
                 .ToListAsync();
         }
