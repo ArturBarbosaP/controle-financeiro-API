@@ -43,6 +43,7 @@ namespace MoneyAPI.Services
                     {
                         UsuarioId = usuario.Id,
                         Nome = usuario.Nome,
+                        NomeUsuario = usuario.NomeUsuario,
                         Token = token
                     };
                 }
@@ -100,6 +101,7 @@ namespace MoneyAPI.Services
                     {
                         UsuarioId = usuario.Id,
                         Nome = usuario.Nome,
+                        NomeUsuario = usuario.NomeUsuario,
                         Token = token
                     };
                 }
