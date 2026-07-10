@@ -27,7 +27,7 @@ namespace MoneyAPI.Services
 
             try
             {
-                Usuario usuario = await _repository.GetUsuarioByNomeUsuario(loginDTO.Usuario);
+                Usuario usuario = await _repository.GetUsuarioByNomeUsuario(loginDTO.NomeUsuario);
 
                 if (usuario == null || !PasswordHelper.VerifyPassword(loginDTO.Senha, usuario.Senha))
                 {
