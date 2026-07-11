@@ -546,10 +546,6 @@ namespace MoneyAPI.Services
                     dataFinalFatura = dataFinalFatura.AddMonths(-1);
                 }
             }
-            else
-            {
-                throw new Exception("Data do lançamento não está dentro de nenhuma fatura!");
-            }
 
             Lancamento fatura = await _repository.GetLancamentoFaturaCartao(cartao.Nome, cartao.DataVencimento.AddMonths(addMonths), cartao.ContaId, categoriaFatura.Id, usuarioId);
 
