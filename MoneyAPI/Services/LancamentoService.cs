@@ -566,7 +566,7 @@ namespace MoneyAPI.Services
                     Valor = lancamento.Valor,
                     Descricao = cartao.Nome,
                     Data = cartao.DataVencimento.AddMonths(addMonths),
-                    Observacao = $"Data de fechamento: {cartao.DataFechamento.ToString("dd/MM/yyyy")}",
+                    Observacao = $"Data de fechamento: {cartao.DataFechamento.AddMonths(addMonths).ToString("dd/MM/yyyy")}",
                     UsuarioId = usuarioId
                 };
 
