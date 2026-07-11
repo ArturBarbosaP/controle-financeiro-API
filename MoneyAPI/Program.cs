@@ -81,6 +81,16 @@ builder.Services.AddQuartz(q =>
         .WithIdentity("AlterarPreLancamentoAndFaturaJob-trigger")
         .WithCronSchedule("0 0 7 * * ?") //todod dia as 7 horas
     );
+
+    JobKey sessaoJobKey = new("ResetarSessionsJob");
+
+    q.AddJob<ResetarSessionsJob>(opts => opts.WithIdentity(sessaoJobKey));
+
+    q.AddTrigger(opt =>
+        opt.ForJob(sessaoJobKey)
+        .WithIdentity("ResetarSessionsJob-trigger")
+        .WithCronSchedule("0 0 0 1 * ?")
+    );
 });
 
 builder.Services.AddQuartzHostedService(opt => opt.WaitForJobsToComplete = true);

@@ -19,11 +19,6 @@ namespace MoneyAPI.Data
             return _sessoes.TryGetValue(token, out var id) ? id : null;
         }
 
-        public bool SessaoExiste(string token)
-        {
-            return _sessoes.ContainsKey(token);
-        }
-
         public void RemoverSessao(string token)
         {
             _sessoes.TryRemove(token, out _);
@@ -32,6 +27,11 @@ namespace MoneyAPI.Data
         public bool UsuarioInAdminList(string token)
         {
             return _sessoes.TryGetValue(token, out var id) && adminsUsuarioId.Contains(id);
+        }
+
+        public void LimparSessoes()
+        {
+            _sessoes.Clear();
         }
     }
 }

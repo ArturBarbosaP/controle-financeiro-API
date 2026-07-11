@@ -16,7 +16,7 @@ namespace MoneyAPI.Jobs
 
         public async Task Execute(IJobExecutionContext context)
         {
-            _logger.LogInformation("Job iniciado: {Hora}", DateTime.Now);
+            _logger.LogInformation("Job AlterarPreLancamentoAndFaturaJob iniciado: {Hora}", DateTime.Now);
 
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -44,7 +44,7 @@ namespace MoneyAPI.Jobs
                 }
             }
 
-            _logger.LogInformation("Job finalizado: {Hora}", DateTime.Now);
+            _logger.LogInformation("Job AlterarPreLancamentoAndFaturaJob finalizado: {Hora}", DateTime.Now);
         }
     }
 }

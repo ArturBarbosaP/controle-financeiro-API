@@ -254,7 +254,7 @@ namespace MoneyAPI.Services
 
             foreach (Cartao cartao in cartoes)
             {
-                _notification.Insert(cartao.Conta.UsuarioId, $"\n{cartao.Nome} fechando hoje");
+                _notification.Insert(cartao.Conta.UsuarioId, $"\n{cartao.Nome} está com a fatura fechada!");
             }
         }
     }
