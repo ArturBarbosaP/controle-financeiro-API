@@ -27,9 +27,6 @@ namespace MoneyAPI.Controllers
         {
             get
             {
-#if DEBUG
-                return 1;
-#endif
                 return Token is null ? null : _session.ObterUsuarioId(Token);
             }
         }
@@ -38,9 +35,6 @@ namespace MoneyAPI.Controllers
         {
             get
             {
-#if DEBUG
-                return true;
-#endif
                 return Token is not null && _session.UsuarioInAdminList(Token);
             }
         }
