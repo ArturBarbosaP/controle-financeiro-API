@@ -6,6 +6,7 @@ using MoneyAPI.Jobs;
 using Quartz;
 using Serilog;
 using SwaggerThemes;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -134,6 +135,10 @@ builder.Services.AddSwaggerGen(c =>
         }
     });
 });
+
+//formatado em pt br
+CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
 
 var app = builder.Build();
 
