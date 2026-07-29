@@ -24,7 +24,7 @@ namespace MoneyAPI.Helpers
             {
                 Nome = "Estorno",
                 Tipo = "Receita",
-                Cor = "#27c497",
+                Cor = "#BCBCBC",
                 Padrao = true
             }
         ];

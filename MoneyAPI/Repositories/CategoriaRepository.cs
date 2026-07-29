@@ -51,10 +51,7 @@ namespace MoneyAPI.Repositories
 
         public async Task<Categoria> GetCategoriaPadraoFatura(int usuarioId)
         {
-            return await _context.Categorias
-                .Where(u => u.UsuarioId == usuarioId)
-                .Where(c => c.Nome == "Pagamento de fatura" && c.Padrao)
-                .FirstOrDefaultAsync();
+            return await GetCategoriaPadraoByNome("Pagamento de fatura", usuarioId);
         }
 
         public async Task<IEnumerable<Categoria>> GetCategoriasByTipo(int usuarioId, string tipo)
@@ -71,6 +68,14 @@ namespace MoneyAPI.Repositories
                 .Where(u => u.UsuarioId == usuarioId)
                 .Where(c => c.Nome == nome && c.Tipo == tipo)
                 .Where(c => excludeId == null || c.Id != excludeId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Categoria> GetCategoriaPadraoByNome(string nome, int usuarioId)
+        {
+            return await _context.Categorias
+                .Where(u => u.UsuarioId == usuarioId)
+                .Where(c => c.Nome == nome && c.Padrao)
                 .FirstOrDefaultAsync();
         }
     }

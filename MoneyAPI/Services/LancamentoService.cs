@@ -41,10 +41,15 @@ namespace MoneyAPI.Services
                 Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
                 Cartao? cartao = null;
                 Conta? contaDestino = null;
+                Categoria? categoriaEstorno = null;
 
                 if (lancamentoDto.CartaoId != null)
                 {
                     cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                    categoriaEstorno = await _categoriaRepository.GetCategoriaPadraoByNome("Estorno", usuarioId) ?? throw new NullReferenceException("Categoria de Estorno não encontrada!");
+
+                    if (lancamentoDto.Tipo == "Receita" && lancamentoDto.CategoriaId != categoriaEstorno.Id)
+                        throw new Exception("Lançamento do tipo Receita não pode ter cartão!");
                 }
 
                 if (lancamentoDto.ContaDestinoId != null) //transferencia
@@ -115,10 +120,15 @@ namespace MoneyAPI.Services
                 Categoria categoria = await _categoriaRepository.GetCategoriaByIdTipo(lancamentoDto.CategoriaId, lancamentoDto.Tipo, usuarioId) ?? throw new NullReferenceException("Categoria não encontrada!");
                 Cartao? cartao = null;
                 Conta? contaDestino = null;
+                Categoria? categoriaEstorno = null;
 
                 if (lancamentoDto.CartaoId != null)
                 {
                     cartao = await _cartaoRepository.GetCartaoById((int)lancamentoDto.CartaoId, usuarioId) ?? throw new NullReferenceException("Cartão não encontrado!");
+                    categoriaEstorno = await _categoriaRepository.GetCategoriaPadraoByNome("Estorno", usuarioId) ?? throw new NullReferenceException("Categoria de Estorno não encontrada!");
+
+                    if (lancamentoDto.Tipo == "Receita" && lancamentoDto.CategoriaId != categoriaEstorno.Id)
+                        throw new Exception("Lançamento do tipo Receita não pode ter cartão!");
                 }
 
                 if (lancamentoDto.ContaDestinoId != null) //transferencia
