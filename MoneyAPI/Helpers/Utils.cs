@@ -19,6 +19,13 @@ namespace MoneyAPI.Helpers
                 Tipo = "Transf.",
                 Cor = "#BCBCBC",
                 Padrao = true
+            },
+            new Categoria
+            {
+                Nome = "Estorno",
+                Tipo = "Receita",
+                Cor = "#27c497",
+                Padrao = true
             }
         ];
 
