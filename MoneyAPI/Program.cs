@@ -182,8 +182,7 @@ app.UseSerilogRequestLogging(opts =>
             var requestBody = await requestReader.ReadToEndAsync();
             try
             {   //tentando estruturar o body
-                using var requestDoc = System.Text.Json.JsonDocument.Parse(requestBody);
-                var requestBodyObj = requestDoc.RootElement.Clone();
+                var requestBodyObj = Newtonsoft.Json.JsonConvert.DeserializeObject(requestBody);
                 diagnosticContext.Set("RequestBody", requestBodyObj, destructureObjects: true);
             }
             catch
@@ -198,8 +197,7 @@ app.UseSerilogRequestLogging(opts =>
                 var responseBody = await responseReader.ReadToEndAsync();
                 try
                 {
-                    using var responseDoc = System.Text.Json.JsonDocument.Parse(responseBody);
-                    var responseBodyObj = responseDoc.RootElement.Clone();
+                    var responseBodyObj = Newtonsoft.Json.JsonConvert.DeserializeObject(responseBody);
                     diagnosticContext.Set("ResponseBody", responseBodyObj, destructureObjects: true);
                 }
                 catch
