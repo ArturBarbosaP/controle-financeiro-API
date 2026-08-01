@@ -143,9 +143,26 @@ CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("pt-BR");
 var app = builder.Build();
 
 //adicionando usuarioId e IP no log
+app.Use(async (context, next) =>
+{   //salvando o request pra ler mais de uma vez
+    context.Request.EnableBuffering();
+
+    // substitui o stream de resposta por um que permite leitura
+    var originalResponseBody = context.Response.Body;
+    using var responseBuffer = new MemoryStream();
+    context.Response.Body = responseBuffer;
+
+    await next();
+
+    // copia de volta pro stream original pra resposta chegar ao client
+    responseBuffer.Position = 0;
+    await responseBuffer.CopyToAsync(originalResponseBody);
+    context.Response.Body = originalResponseBody;
+});
+
 app.UseSerilogRequestLogging(opts =>
 {
-    opts.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    opts.EnrichDiagnosticContext = async (diagnosticContext, httpContext) =>
     {
         var token = httpContext.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
         var session = httpContext.RequestServices.GetRequiredService<Session>();
@@ -153,6 +170,42 @@ app.UseSerilogRequestLogging(opts =>
 
         diagnosticContext.Set("UsuarioId", usuarioId ?? 0);
         diagnosticContext.Set("IP", httpContext.Connection.RemoteIpAddress);
+        diagnosticContext.Set("Errors", httpContext.Response.Body);
+
+        var method = httpContext.Request.Method;
+        var statusCode = httpContext.Response.StatusCode;
+
+        if ((method == "POST" || method == "PUT") && statusCode >= 400)
+        {
+            httpContext.Request.Body.Position = 0;
+            using var requestReader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
+            var requestBody = await requestReader.ReadToEndAsync();
+            try
+            {   //tentando estruturar o body
+                var bodyObj = System.Text.Json.JsonSerializer.Deserialize<object>(requestBody);
+                diagnosticContext.Set("RequestBody", bodyObj, destructureObjects: true);
+            }
+            catch
+            {
+                diagnosticContext.Set("RequestBody", requestBody);
+            }
+
+            if (httpContext.Response.Body.CanSeek)
+            {
+                httpContext.Response.Body.Position = 0;
+                using var responseReader = new StreamReader(httpContext.Response.Body, leaveOpen: true);
+                var responseBody = await responseReader.ReadToEndAsync();
+                try
+                {
+                    var responseBodyObj = System.Text.Json.JsonSerializer.Deserialize<object>(responseBody);
+                    diagnosticContext.Set("ResponseBody", responseBodyObj, destructureObjects: true);
+                }
+                catch
+                {
+                    diagnosticContext.Set("ResponseBody", responseBody);
+                }
+            }
+        }
     };
 });
 
