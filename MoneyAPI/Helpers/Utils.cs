@@ -35,5 +35,22 @@ namespace MoneyAPI.Helpers
             { "Transf.", 2 },
             { "Despesa", 3 }
         };
+
+        public static object ConverterParaDestruturavel(Newtonsoft.Json.Linq.JToken token)
+        {
+            return token switch
+            {
+                Newtonsoft.Json.Linq.JObject obj => obj.Properties()
+                    .ToDictionary(p => p.Name, p => ConverterParaDestruturavel(p.Value)),
+
+                Newtonsoft.Json.Linq.JArray arr => arr
+                    .Select(ConverterParaDestruturavel)
+                    .ToList(),
+
+                Newtonsoft.Json.Linq.JValue val => val.Value ?? "null",
+
+                _ => token.ToString()
+            };
+        }
     }
 }

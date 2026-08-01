@@ -170,24 +170,26 @@ app.UseSerilogRequestLogging(opts =>
 
         diagnosticContext.Set("UsuarioId", usuarioId ?? 0);
         diagnosticContext.Set("IP", httpContext.Connection.RemoteIpAddress);
-        diagnosticContext.Set("Errors", httpContext.Response.Body);
 
         var method = httpContext.Request.Method;
         var statusCode = httpContext.Response.StatusCode;
 
-        if ((method == "POST" || method == "PUT") && statusCode >= 400)
+        if (statusCode >= 400)
         {
-            httpContext.Request.Body.Position = 0;
-            using var requestReader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
-            var requestBody = await requestReader.ReadToEndAsync();
-            try
-            {   //tentando estruturar o body
-                var requestBodyObj = Newtonsoft.Json.JsonConvert.DeserializeObject(requestBody);
-                diagnosticContext.Set("RequestBody", requestBodyObj, destructureObjects: true);
-            }
-            catch
+            if (method == "POST" || method == "PUT")
             {
-                diagnosticContext.Set("RequestBody", requestBody);
+                httpContext.Request.Body.Position = 0;
+                using var requestReader = new StreamReader(httpContext.Request.Body, leaveOpen: true);
+                var requestBody = await requestReader.ReadToEndAsync();
+                try
+                {   //tentando estruturar o body
+                    var requestBodyObj = Newtonsoft.Json.Linq.JToken.Parse(requestBody);
+                    diagnosticContext.Set("RequestBody", Utils.ConverterParaDestruturavel(requestBodyObj), destructureObjects: true);
+                }
+                catch
+                {
+                    diagnosticContext.Set("RequestBody", requestBody);
+                }
             }
 
             if (httpContext.Response.Body.CanSeek)
@@ -197,8 +199,8 @@ app.UseSerilogRequestLogging(opts =>
                 var responseBody = await responseReader.ReadToEndAsync();
                 try
                 {
-                    var responseBodyObj = Newtonsoft.Json.JsonConvert.DeserializeObject(responseBody);
-                    diagnosticContext.Set("ResponseBody", responseBodyObj, destructureObjects: true);
+                    var responseBodyObj = Newtonsoft.Json.Linq.JToken.Parse(responseBody);
+                    diagnosticContext.Set("ResponseBody", Utils.ConverterParaDestruturavel(responseBodyObj), destructureObjects: true);
                 }
                 catch
                 {
