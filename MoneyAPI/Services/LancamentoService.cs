@@ -638,7 +638,7 @@ namespace MoneyAPI.Services
                     _repository.Update(l);
 
                     if (!l.CartaoId.HasValue)
-                        AtualizarSaldo(l.Valor, false, l.Conta);
+                        AtualizarSaldo(l.Valor, false, l.Conta, l.ContaDestino);
 
                     _notification.Insert(grupo.Key, $"\t• {l.Descricao} - {Math.Abs(l.Valor).ToString("C2")} - {l.Tipo}\n");
                 }

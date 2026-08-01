@@ -105,6 +105,7 @@ namespace MoneyAPI.Repositories
         {
             return await _context.Lancamentos
                 .Include(l => l.Conta)
+                .Include(l => l.ContaDestino)
                 .Where(l => l.PreLancamento && l.Data <= DateOnly.FromDateTime(DateTime.Now))
                 .ToListAsync();
         }
